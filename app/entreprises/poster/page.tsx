@@ -167,7 +167,7 @@ export default function PosterMissionPage() {
 
         <button
           type="submit"
-          className="w-full rounded-lg bg-slate-900 px-6 py-3.5 font-semibold text-white transition hover:bg-slate-700"
+          className="cut-sm w-full cursor-pointer bg-slate-900 px-6 py-3.5 font-semibold text-white transition-colors duration-200 hover:bg-slate-700"
         >
           Continuer vers le paiement sécurisé
         </button>

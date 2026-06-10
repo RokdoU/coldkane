@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Timer } from "./icons";
 
 function remaining(deadline: string) {
   const ms = new Date(deadline).getTime() - Date.now();
@@ -19,11 +20,12 @@ export function Countdown({ deadline }: { deadline: string }) {
     return () => clearInterval(id);
   }, [deadline]);
 
-  if (!time) return <span className="font-mono text-sm text-foreground/40">Expiré</span>;
+  if (!time) return <span className="display text-sm text-foreground/40">Expiré</span>;
 
   return (
-    <span className="font-mono text-sm font-bold text-ember-400">
-      ⏳ {time.h}h {String(time.m).padStart(2, "0")}m {String(time.s).padStart(2, "0")}s
+    <span className="display inline-flex items-center gap-1.5 text-sm text-ember-400">
+      <Timer className="h-4 w-4" />
+      {time.h}h {String(time.m).padStart(2, "0")}m {String(time.s).padStart(2, "0")}s
     </span>
   );
 }

@@ -86,7 +86,7 @@ export const mockMissions: Mission[] = [
   {
     id: "m2",
     companyName: "Hexalift",
-    title: "⚡ BOUNTY — 10 RDV qualifiés secteur logistique avant dimanche",
+    title: "10 RDV qualifiés secteur logistique avant dimanche",
     description:
       "Solution de monte-charge connecté. Cible : directeurs d'exploitation, entrepôts > 5000 m². Prime majorée, fenêtre courte.",
     sector: "Industrie / Logistique",
