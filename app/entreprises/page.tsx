@@ -28,13 +28,13 @@ export default function EntreprisesPage() {
           <div className="mt-8 flex gap-3">
             <Link
               href="/entreprises/poster"
-              className="cut-sm cursor-pointer bg-slate-900 px-6 py-3 font-semibold text-white transition-colors duration-200 hover:bg-slate-700"
+              className="rounded-md cursor-pointer bg-slate-900 px-6 py-3 font-semibold text-white transition-colors duration-200 hover:bg-slate-700"
             >
               Déposer une mission
             </Link>
             <Link
               href="/leaderboard"
-              className="cut-sm cursor-pointer border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition-colors duration-200 hover:border-slate-400"
+              className="rounded-md cursor-pointer border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition-colors duration-200 hover:border-slate-400"
             >
               Voir le classement des callers
             </Link>
@@ -95,7 +95,7 @@ export default function EntreprisesPage() {
           </p>
           <Link
             href="/entreprises/poster"
-            className="cut-sm mt-6 inline-block cursor-pointer bg-white px-6 py-3 font-semibold text-slate-900 transition-colors duration-200 hover:bg-slate-100"
+            className="rounded-md mt-6 inline-block cursor-pointer bg-white px-6 py-3 font-semibold text-slate-900 transition-colors duration-200 hover:bg-slate-100"
           >
             Déposer une mission
           </Link>

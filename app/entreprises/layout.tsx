@@ -27,7 +27,7 @@ export default function EntreprisesLayout({ children }: { children: React.ReactN
             </Link>
             <Link
               href="/entreprises/poster"
-              className="cut-sm cursor-pointer bg-slate-900 px-4 py-2 font-semibold text-white transition-colors duration-200 hover:bg-slate-700"
+              className="rounded-md cursor-pointer bg-slate-900 px-4 py-2 font-semibold text-white transition-colors duration-200 hover:bg-slate-700"
             >
               Déposer une mission
             </Link>

@@ -167,14 +167,14 @@ export default function PosterMissionPage() {
 
         <button
           type="submit"
-          className="cut-sm w-full cursor-pointer bg-slate-900 px-6 py-3.5 font-semibold text-white transition-colors duration-200 hover:bg-slate-700"
+          className="rounded-md w-full cursor-pointer bg-slate-900 px-6 py-3.5 font-semibold text-white transition-colors duration-200 hover:bg-slate-700"
         >
           Continuer vers le paiement sécurisé
         </button>
 
         {submitted && (
           <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            🚧 Le paiement escrow sera activé à la mise en production (Stripe Connect).
+            Le paiement escrow sera activé à la mise en production (Stripe Connect).
             Votre mission est prête : « {title} » — {meetingsTarget} RDV à{" "}
             {formatEuros(pricePerMeeting * 100)} ({sector}
             {isBounty ? ", bounty" : ""}).

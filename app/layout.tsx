@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import { Russo_One, Chakra_Petch, IBM_Plex_Sans } from "next/font/google";
+import { Space_Grotesk, Inter, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import { BRAND } from "@/lib/config";
 
-const russo = Russo_One({
-  variable: "--font-russo",
-  weight: "400",
+const grotesk = Space_Grotesk({
+  variable: "--font-grotesk",
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
 });
 
-const chakra = Chakra_Petch({
-  variable: "--font-chakra",
-  weight: ["300", "400", "500", "600", "700"],
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -37,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${russo.variable} ${chakra.variable} ${plex.variable} h-full antialiased`}
+      className={`${grotesk.variable} ${inter.variable} ${plex.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

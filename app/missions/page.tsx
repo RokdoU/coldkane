@@ -3,7 +3,7 @@ import { Nav, Footer } from "@/components/nav";
 import { MissionCard } from "@/components/mission-card";
 import { getOpenMissions } from "@/lib/data";
 import { formatEuros } from "@/lib/ranking";
-import { Lock, Zap } from "@/components/icons";
+import { Lock } from "@/components/icons";
 
 export const metadata: Metadata = {
   title: "Missions & bounties",
@@ -19,26 +19,23 @@ export default async function MissionsPage() {
   return (
     <>
       <Nav />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-12">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-14">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="display text-4xl tracking-wide">Missions</h1>
-            <p className="mt-2 text-foreground/50">
+            <h1 className="display text-3xl tracking-tight">Missions</h1>
+            <p className="mt-2 text-sm text-foreground/45">
               Paiement à la performance. L&apos;argent est déjà séquestré — tu vois ce que tu chasses.
             </p>
           </div>
-          <p className="cut-sm flex items-center gap-2 border border-ice-500/30 bg-ice-500/10 px-4 py-2 text-sm font-semibold text-ice-300">
-            <Lock className="h-4 w-4" />
+          <p className="tnum flex items-center gap-2 rounded-lg border border-night-600 bg-night-800 px-4 py-2 text-sm font-medium text-foreground/70">
+            <Lock className="h-3.5 w-3.5 text-ice-400" />
             {formatEuros(totalEscrow)} actuellement en escrow
           </p>
         </div>
 
         {bounties.length > 0 && (
           <section className="mt-10">
-            <h2 className="display flex items-center gap-2 text-lg tracking-wide text-ember-400">
-              <Zap className="h-5 w-5" />
-              Bounties — fenêtre courte, prime majorée
-            </h2>
+            <h2 className="micro text-ember-400">Bounties — fenêtre courte, prime majorée</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {bounties.map((m) => (
                 <MissionCard key={m.id} mission={m} />
@@ -48,7 +45,7 @@ export default async function MissionsPage() {
         )}
 
         <section className="mt-10">
-          <h2 className="display text-lg tracking-wide">Missions ouvertes</h2>
+          <h2 className="micro text-foreground/40">Missions ouvertes</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {regular.map((m) => (
               <MissionCard key={m.id} mission={m} />
