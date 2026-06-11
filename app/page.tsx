@@ -2,16 +2,26 @@ import Link from "next/link";
 import { Nav, Footer } from "@/components/nav";
 import { LadderTable } from "@/components/ladder-table";
 import { MissionCard } from "@/components/mission-card";
-import { getActiveSeason, getLadder, getOpenMissions } from "@/lib/data";
-import { Crosshair, Lock, Phone, ShieldCheck, TrendingUp } from "@/components/icons";
+import { KillFeed } from "@/components/kill-feed";
+import { Countdown } from "@/components/countdown";
+import {
+  getActiveSeason,
+  getLadder,
+  getOpenMissions,
+  getRecentValidations,
+} from "@/lib/data";
+import { formatEuros } from "@/lib/ranking";
+import { Crosshair, Lock, Phone, ShieldCheck, TrendingUp, Zap } from "@/components/icons";
 
 export default async function Home() {
-  const [season, ladder, missions] = await Promise.all([
+  const [season, ladder, missions, validations] = await Promise.all([
     getActiveSeason(),
     getLadder(),
     getOpenMissions(),
+    getRecentValidations(),
   ]);
   const bounties = missions.filter((m) => m.isBounty);
+  const liveBounty = bounties[0] ?? null;
   const seasonEnd = new Date(season.endsAt).toLocaleDateString("fr-FR", {
     day: "numeric",
     month: "long",
@@ -20,6 +30,26 @@ export default async function Home() {
   return (
     <>
       <Nav />
+
+      {/* Bandeau bounty : un event, pas une bannière pub */}
+      {liveBounty && liveBounty.bountyDeadline && (
+        <Link
+          href={`/missions/${liveBounty.id}`}
+          className="block border-b border-ember-500/20 bg-ember-500/[0.06] transition-colors duration-200 hover:bg-ember-500/[0.1]"
+        >
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm">
+            <span className="micro flex items-center gap-1 text-ember-400">
+              <Zap className="h-3 w-3" />
+              Bounty actif
+            </span>
+            <span className="text-foreground/70">
+              {formatEuros(liveBounty.pricePerMeetingCents)}/RDV — {liveBounty.companyName}
+            </span>
+            <Countdown deadline={liveBounty.bountyDeadline} />
+          </div>
+        </Link>
+      )}
+
       <main className="flex-1">
         {/* Hero */}
         <section className="relative overflow-hidden border-b border-night-600">
@@ -53,8 +83,13 @@ export default async function Home() {
               </Link>
             </div>
 
+            {/* Kill feed : la plateforme est vivante, en direct */}
+            <div className="mx-auto mt-14 max-w-xl">
+              <KillFeed events={validations} />
+            </div>
+
             {/* Stats clés */}
-            <div className="mx-auto mt-20 grid max-w-3xl grid-cols-3 divide-x divide-night-600 rounded-xl border border-night-600 bg-night-800">
+            <div className="mx-auto mt-10 grid max-w-3xl grid-cols-3 divide-x divide-night-600 rounded-xl border border-night-600 bg-night-800">
               {[
                 { icon: Crosshair, big: "100 pts", small: "par RDV validé" },
                 { icon: Lock, big: "15 %", small: "de commission, zéro fixe" },

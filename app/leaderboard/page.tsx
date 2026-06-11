@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Nav, Footer } from "@/components/nav";
 import { LadderTable } from "@/components/ladder-table";
 import { LiveLadderRefresh } from "@/components/live-ladder-refresh";
-import { getActiveSeason, getLadder } from "@/lib/data";
+import { KillFeed } from "@/components/kill-feed";
+import { getActiveSeason, getLadder, getRecentValidations } from "@/lib/data";
 import { LEGENDE_TOP_N, TIER_THRESHOLDS, TIER_LABELS } from "@/lib/ranking";
 import { Star, Timer } from "@/components/icons";
 
@@ -12,7 +13,11 @@ export const metadata: Metadata = {
 };
 
 export default async function LeaderboardPage() {
-  const [season, ladder] = await Promise.all([getActiveSeason(), getLadder()]);
+  const [season, ladder, validations] = await Promise.all([
+    getActiveSeason(),
+    getLadder(),
+    getRecentValidations(),
+  ]);
   const daysLeft = Math.max(
     0,
     Math.ceil((new Date(season.endsAt).getTime() - Date.now()) / 86_400_000),
@@ -40,7 +45,11 @@ export default async function LeaderboardPage() {
           </p>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-6">
+          <KillFeed events={validations} />
+        </div>
+
+        <div className="mt-4">
           <LadderTable entries={ladder} />
         </div>
 

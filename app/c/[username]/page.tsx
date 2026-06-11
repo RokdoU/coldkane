@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Nav, Footer } from "@/components/nav";
 import { TierBadge } from "@/components/tier-badge";
+import { ShareKit } from "@/components/share-kit";
 import { getCallerByUsername } from "@/lib/data";
 import { nextTierProgress, TIER_LABELS } from "@/lib/ranking";
 import { Ban, Calendar, Flame, Medal, ShieldCheck, TrendingUp } from "@/components/icons";
@@ -108,6 +109,16 @@ export default async function CallerProfilePage({ params }: Props) {
             </div>
           ))}
         </section>
+
+        {/* Partage */}
+        <div className="mt-4">
+          <ShareKit
+            username={caller.username}
+            rank={entry.rank}
+            tierLabel={TIER_LABELS[entry.tier]}
+            meetingsValidated={entry.meetingsValidated}
+          />
+        </div>
 
         {/* Carrière */}
         <section className="mt-4 rounded-xl border border-night-600 bg-night-800 p-6">

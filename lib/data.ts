@@ -122,3 +122,81 @@ export async function getMissionById(id: string): Promise<Mission | null> {
   if (!data) return null;
   return rowToMission(data as Record<string, unknown>);
 }
+
+// =====================================================
+// Kill feed : dernières validations publiques
+// =====================================================
+
+export interface ValidationEvent {
+  id: string;
+  callerUsername: string;
+  companyName: string;
+  payoutCents: number;
+  validatedAt: string;
+}
+
+export async function getRecentValidations(): Promise<ValidationEvent[]> {
+  if (!isSupabaseConfigured()) {
+    // Démo : événements plausibles, étalés sur les dernières heures
+    const events: Array<[string, string, number, number]> = [
+      ["sashaclose", "Hexalift", 21250, 8],
+      ["karim_dial", "Nexa CRM", 12750, 23],
+      ["lea.outbound", "Studio Karma", 7650, 51],
+      ["ninacalls", "Hexalift", 21250, 78],
+      ["sashaclose", "Nexa CRM", 12750, 117],
+      ["tomdialer", "Studio Karma", 7650, 164],
+    ];
+    return events.map(([username, company, cents, minAgo], i) => ({
+      id: `demo-v${i}`,
+      callerUsername: username,
+      companyName: company,
+      payoutCents: cents,
+      validatedAt: new Date(Date.now() - minAgo * 60_000).toISOString(),
+    }));
+  }
+  const { data } = await supabasePublic()
+    .from("recent_validations")
+    .select("*")
+    .limit(12);
+  return (data ?? []).map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    callerUsername: row.caller_username as string,
+    companyName: row.company_name as string,
+    payoutCents: row.payout_cents as number,
+    validatedAt: row.validated_at as string,
+  }));
+}
+
+// =====================================================
+// Rival : le joueur juste au-dessus au classement
+// =====================================================
+
+export interface RivalInfo {
+  rivalUsername: string;
+  pointsGap: number;
+  myRank: number;
+  daysLeft: number;
+}
+
+export async function getRivalInfo(username: string | null): Promise<RivalInfo | null> {
+  const [ladder, season] = await Promise.all([getLadder(), getActiveSeason()]);
+  const daysLeft = Math.max(
+    0,
+    Math.ceil((new Date(season.endsAt).getTime() - Date.now()) / 86_400_000),
+  );
+
+  // Démo : pas de session — on montre la mécanique depuis le rang 6
+  const myIndex = username
+    ? ladder.findIndex((e) => e.caller.username === username)
+    : 5;
+  if (myIndex <= 0) return null; // introuvable ou déjà n°1
+
+  const me = ladder[myIndex];
+  const above = ladder[myIndex - 1];
+  return {
+    rivalUsername: above.caller.username,
+    pointsGap: above.points - me.points + 1,
+    myRank: me.rank,
+    daysLeft,
+  };
+}

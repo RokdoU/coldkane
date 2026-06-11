@@ -5,11 +5,14 @@ import Link from "next/link";
 import { Nav, Footer } from "@/components/nav";
 import { getSessionProfile } from "@/lib/supabase-server";
 import { getCallerDashboard } from "@/lib/dashboard-data";
+import { getRivalInfo } from "@/lib/data";
 import { formatEuros } from "@/lib/ranking";
 import { Calendar, Check, Lock, TrendingUp } from "@/components/icons";
 import { DeclareMeetingForm } from "./declare-meeting-form";
 import { DemoBanner } from "@/components/demo-banner";
 import { MeetingStatusBadge } from "@/components/meeting-status-badge";
+import { RivalCard } from "@/components/rival-card";
+import { ReferralCard } from "@/components/referral-card";
 
 export const metadata: Metadata = {
   title: "Mon dashboard",
@@ -17,7 +20,10 @@ export const metadata: Metadata = {
 
 export default async function CallerDashboardPage() {
   const profile = await getSessionProfile();
-  const data = await getCallerDashboard(profile?.id ?? null);
+  const [data, rival] = await Promise.all([
+    getCallerDashboard(profile?.id ?? null),
+    getRivalInfo(profile?.username ?? null),
+  ]);
   const activeAssignments = data.assignments.filter((a) => a.status === "active");
 
   return (
@@ -45,8 +51,15 @@ export default async function CallerDashboardPage() {
           )}
         </div>
 
+        {/* Rivalité : une cible nommée, pas un chiffre abstrait */}
+        {rival && (
+          <div className="mt-8">
+            <RivalCard rival={rival} />
+          </div>
+        )}
+
         {/* KPIs */}
-        <section className="mt-8 grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-night-600 bg-night-600">
+        <section className="mt-6 grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-night-600 bg-night-600">
           {[
             { icon: TrendingUp, value: formatEuros(data.totalEarnedCents), label: "Gains validés" },
             { icon: Calendar, value: String(data.pendingMeetings), label: "RDV en attente" },
@@ -175,6 +188,27 @@ export default async function CallerDashboardPage() {
             </div>
           )}
         </section>
+
+        {/* Parrainage + profil public */}
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          <ReferralCard username={profile?.username ?? "toncall"} />
+          <div className="flex flex-col justify-between rounded-xl border border-night-600 bg-night-800 p-6">
+            <div>
+              <h2 className="display text-lg">Ton profil public</h2>
+              <p className="mt-1.5 text-sm leading-relaxed text-foreground/45">
+                Ta carte joueur — rang, tier, stats vérifiées — s&apos;affiche
+                automatiquement quand tu partages ton lien. C&apos;est ton CV
+                vivant : colle-le dans ta bio LinkedIn.
+              </p>
+            </div>
+            <Link
+              href={profile ? `/c/${profile.username}` : "/c/sashaclose"}
+              className="mt-4 inline-flex w-fit cursor-pointer items-center gap-2 rounded-md border border-night-500 px-4 py-2.5 text-sm font-medium text-foreground/75 transition-colors duration-200 hover:border-night-400 hover:text-foreground"
+            >
+              Voir mon profil et le partager →
+            </Link>
+          </div>
+        </div>
       </main>
       <Footer />
     </>

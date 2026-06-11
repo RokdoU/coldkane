@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { COMMISSION_RATE } from "@/lib/config";
+import { RoiCalculator } from "@/components/roi-calculator";
 
 export const metadata: Metadata = {
   title: "Entreprises — RDV qualifiés, payés au résultat",
@@ -67,8 +68,13 @@ export default function EntreprisesPage() {
         </div>
       </section>
 
+      {/* Calculateur ROI */}
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <RoiCalculator />
+      </section>
+
       {/* Fonctionnement */}
-      <section id="fonctionnement" className="mx-auto max-w-6xl px-4 py-16">
+      <section id="fonctionnement" className="mx-auto max-w-6xl px-4 pb-16">
         <h2 className="text-2xl font-bold">Fonctionnement</h2>
         <ol className="mt-8 grid gap-6 md:grid-cols-4">
           {[

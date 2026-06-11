@@ -33,6 +33,8 @@ export async function signUp(
     .trim()
     .toLowerCase();
   const companyName = String(formData.get("companyName") ?? "").trim();
+  const referredByRaw = String(formData.get("referredBy") ?? "").trim().toLowerCase();
+  const referredBy = USERNAME_RE.test(referredByRaw) ? referredByRaw : null;
 
   if (!email || !password || !fullName) {
     return { error: "Tous les champs sont obligatoires." };
@@ -73,6 +75,7 @@ export async function signUp(
         full_name: fullName,
         role,
         company_name: companyName || null,
+        referred_by_username: referredBy,
       },
     },
   });

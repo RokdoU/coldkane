@@ -7,7 +7,7 @@ import { signUp, type AuthState } from "@/lib/actions/auth";
 const inputCls =
   "mt-2 w-full rounded-md border border-night-500 bg-night-800 px-4 py-2.5 text-sm outline-none transition-colors duration-200 placeholder:text-foreground/25 focus:border-ice-500";
 
-export function SignupForm() {
+export function SignupForm({ referredBy = null }: { referredBy?: string | null }) {
   const [role, setRole] = useState<"caller" | "company">("caller");
   const [state, action, pending] = useActionState<AuthState, FormData>(signUp, {
     error: null,
@@ -17,6 +17,7 @@ export function SignupForm() {
     <form action={action} className="mt-8 space-y-5">
       {/* Choix du rôle */}
       <input type="hidden" name="role" value={role} />
+      {referredBy && <input type="hidden" name="referredBy" value={referredBy} />}
       <div className="grid grid-cols-2 gap-2 rounded-lg border border-night-600 bg-night-800 p-1.5">
         {(
           [

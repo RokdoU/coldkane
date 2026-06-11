@@ -23,3 +23,9 @@ export const POINTS = {
   streakBonusCap: 50, // …plafonné à +50
   noShowPenalty: -30,
 } as const;
+
+// Parrainage : part des gains des filleuls reversée au parrain, durée limitée
+export const REFERRAL = {
+  rate: 0.05, // 5% des gains du filleul
+  months: 3, // pendant ses 3 premiers mois
+} as const;
