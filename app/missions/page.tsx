@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Nav, Footer } from "@/components/nav";
-import { MissionCard } from "@/components/mission-card";
-import { MissionDetailModal } from "@/components/mission-detail-modal";
+import { MissionsGrid } from "@/components/missions-grid";
 import { getOpenMissions } from "@/lib/data";
 import { getSessionProfile } from "@/lib/supabase-server";
 import { isSupabaseConfigured, supabaseAdmin } from "@/lib/supabase";
@@ -13,45 +12,28 @@ export const metadata: Metadata = {
   description: "Missions payées à la performance, budget séquestré en escrow.",
 };
 
-export default async function MissionsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string }>;
-}) {
-  const { id: selectedId } = await searchParams;
-
+export default async function MissionsPage() {
   const [missions, profile] = await Promise.all([getOpenMissions(), getSessionProfile()]);
 
   const totalEscrow = missions.reduce((sum, m) => sum + m.budgetCents, 0);
   const bounties = missions.filter((m) => m.isBounty);
   const regular = missions.filter((m) => !m.isBounty);
 
-  const selectedMission = selectedId ? (missions.find((m) => m.id === selectedId) ?? null) : null;
-
-  let hasApplied = false;
-  if (selectedMission && profile?.role === "caller" && isSupabaseConfigured()) {
+  // Précharger les candidatures du caller connecté pour affichage instantané dans le panel
+  let appliedMissionIds: string[] = [];
+  if (profile?.role === "caller" && isSupabaseConfigured()) {
     const db = supabaseAdmin();
     const { data } = await db
       .from("assignments")
-      .select("id")
-      .eq("mission_id", selectedMission.id)
+      .select("mission_id")
       .eq("caller_id", profile.id)
-      .maybeSingle();
-    hasApplied = !!data;
+      .in("mission_id", missions.map((m) => m.id));
+    appliedMissionIds = data?.map((a) => a.mission_id as string) ?? [];
   }
 
   return (
     <>
       <Nav />
-
-      {selectedMission && (
-        <MissionDetailModal
-          mission={selectedMission}
-          profile={profile}
-          hasApplied={hasApplied}
-        />
-      )}
-
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-14">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -66,25 +48,12 @@ export default async function MissionsPage({
           </p>
         </div>
 
-        {bounties.length > 0 && (
-          <section className="mt-10">
-            <h2 className="micro text-ember-400">Bounties — fenêtre courte, prime majorée</h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              {bounties.map((m) => (
-                <MissionCard key={m.id} mission={m} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className="mt-10">
-          <h2 className="micro text-foreground/40">Missions ouvertes</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {regular.map((m) => (
-              <MissionCard key={m.id} mission={m} />
-            ))}
-          </div>
-        </section>
+        <MissionsGrid
+          bounties={bounties}
+          regular={regular}
+          profile={profile}
+          appliedMissionIds={appliedMissionIds}
+        />
       </main>
       <Footer />
     </>

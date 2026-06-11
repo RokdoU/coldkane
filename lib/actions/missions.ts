@@ -181,20 +181,25 @@ export async function companyDisputeMeeting(
 // Côté caller
 // =====================================================
 
-export async function applyToMission(missionId: string) {
-  if (!isSupabaseConfigured()) return;
+export async function applyToMission(missionId: string): Promise<ActionState> {
+  if (!isSupabaseConfigured()) return DEMO;
   const profile = await getSessionProfile();
   if (!profile) redirect(`/connexion?next=/missions`);
-  if (profile.role !== "caller") return;
+  if (profile.role !== "caller") return { error: "Réservé aux callers." };
 
   const supabase = await supabaseServer();
-  await supabase.from("assignments").insert({
+  const { error } = await supabase.from("assignments").insert({
     mission_id: missionId,
     caller_id: profile.id,
   });
+  if (error) {
+    if (error.code === "23505") return { error: null, success: "Candidature déjà envoyée." };
+    return { error: error.message };
+  }
   revalidatePath("/missions");
   revalidatePath(`/missions/${missionId}`);
   revalidatePath("/dashboard");
+  return { error: null, success: "Candidature envoyée !" };
 }
 
 export async function declareMeeting(
