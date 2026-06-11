@@ -220,12 +220,13 @@ export default async function CompanyDashboardPage({
                   <th className="px-4 py-3 text-right font-medium">Progression</th>
                   <th className="px-4 py-3 text-right font-medium">Prix/RDV</th>
                   <th className="px-4 py-3 text-right font-medium">Budget</th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {data.missions.map((m) => (
-                  <tr key={m.id}>
-                    <td className="max-w-70 truncate px-4 py-3 font-medium">{m.title}</td>
+                  <tr key={m.id} className="hover:bg-slate-50">
+                    <td className="max-w-60 truncate px-4 py-3 font-medium">{m.title}</td>
                     <td className="px-4 py-3 text-slate-500">
                       {MISSION_STATUS_LABELS[m.status] ?? m.status}
                     </td>
@@ -237,6 +238,14 @@ export default async function CompanyDashboardPage({
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">
                       {formatEuros(m.budgetCents)}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/missions/${m.id}`}
+                        className="cursor-pointer text-xs font-medium text-slate-400 underline-offset-2 hover:text-slate-700 hover:underline"
+                      >
+                        Voir la fiche
+                      </Link>
                     </td>
                   </tr>
                 ))}

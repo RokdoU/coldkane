@@ -74,16 +74,8 @@ export async function getCallerByUsername(username: string): Promise<LadderEntry
   return ladder.find((e) => e.caller.username === username) ?? null;
 }
 
-export async function getOpenMissions(): Promise<Mission[]> {
-  if (!isSupabaseConfigured()) return mockMissions;
-  const { data } = await supabasePublic()
-    .from("missions")
-    .select("*, companies!inner(name), meetings(status)")
-    .in("status", ["funded", "active"])
-    .order("is_bounty", { ascending: false })
-    .order("created_at", { ascending: false });
-  if (!data || data.length === 0) return mockMissions;
-  return data.map((row: Record<string, unknown>) => ({
+function rowToMission(row: Record<string, unknown>): Mission {
+  return {
     id: row.id as string,
     companyName: (row.companies as { name: string }).name,
     title: row.title as string,
@@ -100,5 +92,33 @@ export async function getOpenMissions(): Promise<Mission[]> {
     bountyDeadline: (row.bounty_deadline as string) ?? null,
     minTier: (row.min_tier as Mission["minTier"]) ?? null,
     createdAt: row.created_at as string,
-  }));
+    targetPersona: (row.target_persona as string) ?? null,
+    meetingType: (row.meeting_type as string) ?? null,
+    pitchNotes: (row.pitch_notes as string) ?? null,
+  };
+}
+
+export async function getOpenMissions(): Promise<Mission[]> {
+  if (!isSupabaseConfigured()) return mockMissions;
+  const { data } = await supabasePublic()
+    .from("missions")
+    .select("*, companies!inner(name), meetings(status)")
+    .in("status", ["funded", "active"])
+    .order("is_bounty", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (!data || data.length === 0) return mockMissions;
+  return data.map((row: Record<string, unknown>) => rowToMission(row));
+}
+
+export async function getMissionById(id: string): Promise<Mission | null> {
+  if (!isSupabaseConfigured()) {
+    return mockMissions.find((m) => m.id === id) ?? null;
+  }
+  const { data } = await supabasePublic()
+    .from("missions")
+    .select("*, companies!inner(name), meetings(status)")
+    .eq("id", id)
+    .single();
+  if (!data) return null;
+  return rowToMission(data as Record<string, unknown>);
 }

@@ -19,6 +19,15 @@ const SECTORS = [
   "Autre",
 ];
 
+const MEETING_TYPES = [
+  "Démo produit de 30 min (visio)",
+  "Appel découverte de 20 min (téléphone)",
+  "Rendez-vous physique chez le prospect",
+  "Rendez-vous physique chez nous",
+  "Démo + qualification budget (45 min)",
+  "Autre",
+];
+
 const inputCls =
   "mt-2 w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none transition-colors duration-200 focus:border-slate-900";
 
@@ -74,15 +83,52 @@ export function MissionForm() {
       </div>
 
       <div>
+        <label htmlFor="targetPersona" className="block text-sm font-semibold">
+          Qui appeler <span className="font-normal text-slate-400">(affiché aux callers)</span>
+        </label>
+        <textarea
+          id="targetPersona"
+          name="targetPersona"
+          rows={3}
+          placeholder="Ex : DAF et DG de PME 20-200 salariés, secteur industrie ou négoce, France métropolitaine."
+          className={inputCls}
+        />
+      </div>
+
+      <div>
+        <label htmlFor="meetingType" className="block text-sm font-semibold">
+          Type de RDV attendu
+        </label>
+        <select id="meetingType" name="meetingType" className={inputCls}>
+          {MEETING_TYPES.map((t) => (
+            <option key={t}>{t}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
         <label htmlFor="description" className="block text-sm font-semibold">
-          Cible & contexte
+          Contexte de la mission <span className="font-normal text-slate-400">(affiché aux callers)</span>
         </label>
         <textarea
           id="description"
           name="description"
           required
           rows={4}
-          placeholder="Qui faut-il joindre (poste, taille d'entreprise, zone) ? Qu'est-ce qui qualifie un bon RDV ?"
+          placeholder="Décris ton produit/service, le problème résolu, le ticket moyen. Les callers s'en serviront pour pitcher."
+          className={inputCls}
+        />
+      </div>
+
+      <div>
+        <label htmlFor="pitchNotes" className="block text-sm font-semibold">
+          Notes de pitch <span className="font-normal text-slate-400">(optionnel — visibles après acceptation)</span>
+        </label>
+        <textarea
+          id="pitchNotes"
+          name="pitchNotes"
+          rows={4}
+          placeholder="Objections fréquentes et réponses, accroche qui marche, cas clients à mentionner..."
           className={inputCls}
         />
       </div>

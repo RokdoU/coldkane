@@ -38,7 +38,7 @@ export default async function MissionsPage() {
             <h2 className="micro text-ember-400">Bounties — fenêtre courte, prime majorée</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {bounties.map((m) => (
-                <MissionCard key={m.id} mission={m} canApply />
+                <MissionCard key={m.id} mission={m}  />
               ))}
             </div>
           </section>
@@ -48,7 +48,7 @@ export default async function MissionsPage() {
           <h2 className="micro text-foreground/40">Missions ouvertes</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {regular.map((m) => (
-              <MissionCard key={m.id} mission={m} canApply />
+              <MissionCard key={m.id} mission={m}  />
             ))}
           </div>
         </section>

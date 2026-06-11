@@ -71,7 +71,7 @@ export const mockMissions: Mission[] = [
     companyName: "Nexa CRM",
     title: "RDV démo pour CRM SaaS — cible DAF de PME",
     description:
-      "SaaS de gestion de la relation client, ticket moyen 8k€/an. Cible : DAF et DG de PME 20-200 salariés, France. Script et liste fournis, calendrier Calendly branché.",
+      "Nexa CRM est un SaaS de gestion de la relation client pensé pour les PME françaises. Ticket moyen 8 000 €/an, engagement annuel, intégrations natives avec Sellsy et Pennylane. Le budget est séquestré — tu es payé dès validation de l'entreprise, pas avant.",
     sector: "SaaS B2B",
     status: "active",
     pricePerMeetingCents: 15000,
@@ -82,13 +82,18 @@ export const mockMissions: Mission[] = [
     bountyDeadline: null,
     minTier: "argent",
     createdAt: "2026-06-02T09:00:00Z",
+    targetPersona:
+      "DAF, DG ou directeur commercial de PME — secteur industrie, négoce ou services B2B. Entreprise entre 20 et 200 salariés, France métropolitaine. Priorité aux boîtes qui utilisent encore Excel ou un vieux CRM (Salesforce à 3 licences compte).",
+    meetingType: "Démo produit de 30 min sur Google Meet avec un account executive Nexa — lien Calendly fourni après acceptation de ta candidature.",
+    pitchNotes:
+      "Accroche qui marche : \"Vous gérez vos clients sur quoi en ce moment ?\" — si la réponse mentionne Excel, un tableau partagé ou un outil qu'ils n'aiment pas, tu tiens le fil. Objection fréquente : \"On a déjà Salesforce.\" Réponse : \"On s'intègre dessus, mais pour les PME qui n'ont pas d'admin Salesforce à plein temps, on divise le coût par 4.\" Ne promets pas de tarif — dirige vers la démo.",
   },
   {
     id: "m2",
     companyName: "Hexalift",
     title: "10 RDV qualifiés secteur logistique avant dimanche",
     description:
-      "Solution de monte-charge connecté. Cible : directeurs d'exploitation, entrepôts > 5000 m². Prime majorée, fenêtre courte.",
+      "Hexalift fabrique des monte-charges connectés pour entrepôts. Leur solution réduit de 40 % les accidents de manutention et s'intègre dans les WMS existants. Fenêtre courte, prime majorée : c'est le moment d'attaquer fort.",
     sector: "Industrie / Logistique",
     status: "active",
     pricePerMeetingCents: 25000,
@@ -99,13 +104,18 @@ export const mockMissions: Mission[] = [
     bountyDeadline: "2026-06-14T22:00:00Z",
     minTier: "or",
     createdAt: "2026-06-09T14:00:00Z",
+    targetPersona:
+      "Directeur d'exploitation ou responsable logistique d'un entrepôt > 5 000 m². Secteurs ciblés : e-commerce, distribution alimentaire, pièces auto. Évite les entrepôts frigorifiques (contrainte technique). Zone : France + Benelux.",
+    meetingType: "Appel découverte de 20 min avec le directeur commercial Hexalift — qualification budget + planning travaux.",
+    pitchNotes:
+      "Angle sécurité en premier : \"La CNAM renforce les contrôles manutention en 2026 — vous êtes à jour sur vos équipements ?\". Si oui, angle productivité : \"On a un benchmark secteur qui montre un gain moyen de 12 min par rotation de palette.\". Évite de parler installation : ils veulent savoir si ça vaut la peine d'aller plus loin, pas signer maintenant.",
   },
   {
     id: "m3",
     companyName: "Talvio",
     title: "Prospection cabinets comptables — outil de pré-compta IA",
     description:
-      "Cible : experts-comptables et responsables de pôle, cabinets 5-50 collaborateurs. Démo de 30 min. Bonne récurrence possible pour le caller retenu.",
+      "Talvio automatise la saisie comptable des pièces justificatives par IA (OCR + classification + intégration directe dans ACD, Cegid, Sage). Tarif cabinet : 200 à 800 €/mois selon volume de dossiers. Aucune concurrence directe sur ce créneau prix/intégration.",
     sector: "Fintech",
     status: "funded",
     pricePerMeetingCents: 12000,
@@ -116,13 +126,18 @@ export const mockMissions: Mission[] = [
     bountyDeadline: null,
     minTier: null,
     createdAt: "2026-06-10T11:00:00Z",
+    targetPersona:
+      "Expert-comptable associé ou responsable de pôle dans un cabinet de 5 à 50 collaborateurs. Cabinets indépendants en priorité (pas les réseaux type Fiducial qui ont leurs outils maison). Le bon interlocuteur dit \"on saisit encore beaucoup\" ou \"on cherche à gagner du temps sur la pièce\". Zone : France entière.",
+    meetingType: "Démo live de 30 min sur Zoom — l'expert-comptable branche une vraie liasse, on lui montre le résultat en temps réel.",
+    pitchNotes:
+      "Opener : \"Combien d'heures par semaine vos collaborateurs passent à saisir des justificatifs ?\" — si > 5h, tu as un lead. Objection principale : \"On a déjà un scanner.\" Réponse : \"On ne remplace pas le scan, on élimine ce qui vient après.\" Autre objection : \"Nos clients n'enverront jamais leurs documents numériquement.\" Réponse : \"80 % des cabinets qui le disent ont 60 % de leurs clients qui le font déjà via leur banque.\"",
   },
   {
     id: "m4",
     companyName: "Studio Karma",
     title: "RDV pour agence SMMA — e-commerçants > 50k€/mois",
     description:
-      "Agence d'acquisition pour e-commerce. Cible : fondateurs de marques DTC. Pitch fourni, preuve sociale solide (cas clients).",
+      "Studio Karma gère les campagnes Meta + TikTok Ads pour des marques DTC. Preuve sociale solide : 14 clients actifs, ROAS moyen 4,2. Ils cherchent 5 nouveaux clients à fort potentiel — donc des RDV très qualifiés, pas du volume.",
     sector: "Agence / SMMA",
     status: "active",
     pricePerMeetingCents: 9000,
@@ -133,6 +148,11 @@ export const mockMissions: Mission[] = [
     bountyDeadline: null,
     minTier: null,
     createdAt: "2026-06-05T16:30:00Z",
+    targetPersona:
+      "Fondateur ou directeur marketing d'une marque e-commerce DTC réalisant plus de 50 000 €/mois de CA. Secteurs idéaux : mode, beauté, compléments alimentaires, maison. La marque doit déjà faire de la pub payante (même mauvaise). Évite les marketplaces pures (Amazon-only, pas de site propre).",
+    meetingType: "Appel stratégique de 30 min avec le fondateur de Studio Karma — audit gratuit des campagnes actuelles pendant l'appel.",
+    pitchNotes:
+      "Opener qui qualifie direct : \"Vous êtes à combien de CA mensuel en ce moment, et quelle part vient des ads ?\". Si la réponse est > 50k et < 30 % en ads, c'est un lead chaud (gros potentiel non exploité). Cas clients à mentionner : marque beauté passée de 30k à 120k/mois en 4 mois. Ne promets pas de résultats chiffrés — dis \"ils ont fait un audit gratuit et décidé de suite\".",
   },
 ];
 

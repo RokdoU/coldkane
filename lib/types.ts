@@ -66,6 +66,9 @@ export interface Mission {
   bountyDeadline: string | null;
   minTier: Tier | null;
   createdAt: string;
+  targetPersona: string | null;
+  meetingType: string | null;
+  pitchNotes: string | null;
 }
 
 export type MeetingStatus =

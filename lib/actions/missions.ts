@@ -38,6 +38,9 @@ export async function createMission(
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const sector = String(formData.get("sector") ?? "").trim();
+  const targetPersona = String(formData.get("targetPersona") ?? "").trim() || null;
+  const meetingType = String(formData.get("meetingType") ?? "").trim() || null;
+  const pitchNotes = String(formData.get("pitchNotes") ?? "").trim() || null;
   const pricePerMeeting = Number(formData.get("pricePerMeeting"));
   const meetingsTarget = Number(formData.get("meetingsTarget"));
   const isBounty = formData.get("isBounty") === "on";
@@ -63,6 +66,9 @@ export async function createMission(
       title,
       description,
       sector,
+      target_persona: targetPersona,
+      meeting_type: meetingType,
+      pitch_notes: pitchNotes,
       status: "draft",
       price_per_meeting_cents: priceCents,
       meetings_target: meetingsTarget,
@@ -187,6 +193,7 @@ export async function applyToMission(missionId: string) {
     caller_id: profile.id,
   });
   revalidatePath("/missions");
+  revalidatePath(`/missions/${missionId}`);
   revalidatePath("/dashboard");
 }
 
