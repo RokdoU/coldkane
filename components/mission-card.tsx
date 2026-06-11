@@ -7,7 +7,7 @@ import { ArrowRight, Lock, Zap } from "./icons";
 export function MissionCard({ mission }: { mission: Mission }) {
   const progress = Math.min(mission.meetingsValidated / mission.meetingsTarget, 1);
   return (
-    <Link href={`/missions/${mission.id}`} className="block">
+    <Link href={`/missions?id=${mission.id}`} className="block">
       <article
         className={`group rounded-xl border bg-night-800 p-5 transition-colors duration-200 ${
           mission.isBounty
