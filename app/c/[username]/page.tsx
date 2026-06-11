@@ -17,9 +17,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
   const entry = await getCallerByUsername(username);
   if (!entry) return { title: "Profil introuvable" };
+  const title = `${entry.caller.username} — ${TIER_LABELS[entry.tier]} · rang #${entry.rank}`;
+  const description = `${entry.points} points, ${entry.meetingsValidated} RDV validés cette saison. Réputation vérifiée par escrow.`;
   return {
-    title: `${entry.caller.username} — ${TIER_LABELS[entry.tier]} · rang #${entry.rank}`,
-    description: `${entry.points} points, ${entry.meetingsValidated} RDV validés cette saison. Réputation vérifiée par escrow.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: `/api/og/${username}`, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`/api/og/${username}`],
+    },
   };
 }
 

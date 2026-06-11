@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/auto-validate",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/close-season",
+      "schedule": "30 4 * * *"
+    }
+  ]
+}

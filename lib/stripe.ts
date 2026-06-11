@@ -16,19 +16,36 @@ export function stripe(): Stripe {
   return new Stripe(key);
 }
 
-// 1. Dépôt escrow : l'entreprise séquestre le budget de la mission
-export async function createEscrowDeposit(params: {
+// 1. Dépôt escrow : l'entreprise séquestre le budget via Checkout hébergé.
+// Les fonds restent sur le solde plateforme jusqu'à validation des RDV.
+export async function createEscrowCheckout(params: {
   missionId: string;
+  title: string;
   budgetCents: number;
-  companyCustomerId?: string;
+  origin: string;
 }) {
-  return stripe().paymentIntents.create({
-    amount: params.budgetCents,
-    currency: "eur",
-    customer: params.companyCustomerId,
+  return stripe().checkout.sessions.create({
+    mode: "payment",
+    line_items: [
+      {
+        price_data: {
+          currency: "eur",
+          unit_amount: params.budgetCents,
+          product_data: {
+            name: `Escrow mission — ${params.title}`,
+            description:
+              "Budget séquestré, libéré uniquement aux RDV validés. Solde non consommé remboursé.",
+          },
+        },
+        quantity: 1,
+      },
+    ],
+    payment_intent_data: {
+      metadata: { mission_id: params.missionId, kind: "escrow_deposit" },
+    },
     metadata: { mission_id: params.missionId, kind: "escrow_deposit" },
-    // les fonds restent sur le solde plateforme jusqu'à validation des RDV
-    automatic_payment_methods: { enabled: true },
+    success_url: `${params.origin}/entreprises/dashboard?funded=1`,
+    cancel_url: `${params.origin}/entreprises/dashboard?canceled=1`,
   });
 }
 

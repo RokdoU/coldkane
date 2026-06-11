@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nav, Footer } from "@/components/nav";
 import { LadderTable } from "@/components/ladder-table";
+import { LiveLadderRefresh } from "@/components/live-ladder-refresh";
 import { getActiveSeason, getLadder } from "@/lib/data";
 import { LEGENDE_TOP_N, TIER_THRESHOLDS, TIER_LABELS } from "@/lib/ranking";
 import { Star, Timer } from "@/components/icons";
@@ -20,6 +21,7 @@ export default async function LeaderboardPage() {
   return (
     <>
       <Nav />
+      <LiveLadderRefresh />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-14">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>

@@ -2,94 +2,81 @@
 
 **Le ladder des cold callers.** Marketplace gamifiée où les commerciaux buildent une réputation publique, vérifiée et impossible à truquer, en bookant des RDV pour des entreprises — paiement à la performance via escrow.
 
-> Le "Strava des cold callers" : ranked à la Valorant, profils publics vérifiés, bounties FOMO, saisons. Le cash est l'hameçon, le statut est le crochet.
+> Le "Strava des cold callers" : ranked, profils publics vérifiés, bounties, saisons. Le cash est l'hameçon, le statut est le crochet.
 
-## Démarrage rapide
+## État : V1
+
+Tout le produit est codé et fonctionne en **mode démo** sans configuration (données fictives). Brancher Supabase + Stripe (checklist ci-dessous) active le mode réel : comptes, missions, escrow, payouts.
+
+**Parcours complets implémentés :**
+
+| Parcours | Détail |
+|---|---|
+| Inscription / connexion | Caller ou entreprise, profil créé par trigger Postgres |
+| Entreprise dépose une mission | Formulaire → mission draft → checkout Stripe → webhook → mission financée |
+| Caller postule | Candidature → acceptation/refus par l'entreprise |
+| Caller déclare un RDV | Prospect dédupliqué par hash (anti-farming), date, mission |
+| Validation du RDV | Par l'entreprise (1 clic) **ou automatique 72h après le RDV** si non contesté |
+| RDV validé | Transaction SQL atomique : payout Stripe Connect + commission 15% + points + streak + ledger + badges |
+| Contestation | Raison obligatoire, gel de la validation, arbitrage |
+| Payouts caller | Onboarding Stripe Connect Express depuis le dashboard |
+| Saisons | Clôture automatique (cron) : badges podium, reset partiel 20%, saison suivante |
+| Viralité | Image OG dynamique par profil (carte joueur partageable), leaderboard temps réel |
+
+## Démarrage
 
 ```bash
 npm install
-npm run dev
+npm run dev   # mode démo immédiat
+npm test      # tests de la logique de ranking/business
 ```
-
-Ouvre [http://localhost:3000](http://localhost:3000). **Sans configuration, l'app tourne en mode démo** avec des données fictives (ladder, missions, profils) — parfait pour montrer le produit.
 
 ## Architecture
 
-**Deux faces, un produit :**
-
-| Face | Routes | Ambiance |
-|---|---|---|
-| Callers (publique) | `/` `/leaderboard` `/missions` `/c/[username]` | Dark, compétitive, hype |
-| Entreprises | `/entreprises` `/entreprises/poster` | Claire, sobre, rassurante |
-
-**Stack :** Next.js 16 (App Router) · TypeScript · Tailwind 4 · Supabase (Postgres + RLS + realtime) · Stripe Connect Express (escrow) · Vercel.
+**Stack :** Next.js 16 (App Router, proxy) · TypeScript · Tailwind 4 · Supabase (Postgres, Auth, RLS, Realtime) · Stripe (Checkout + Connect Express) · Vercel (hosting + crons).
 
 ```
 app/
-  page.tsx                    # Landing hype + top ladder + bounties
-  leaderboard/                # Classement complet + tiers
-  c/[username]/               # Profil public vérifié (le CV vivant)
-  missions/                   # Missions & bounties
-  entreprises/                # Face B2B (layout clair séparé)
-    poster/                   # Dépôt de mission + calcul escrow
+  page.tsx, leaderboard/, missions/, c/[username]/   # face publique (dark)
+  connexion/, inscription/                            # auth
+  dashboard/                                          # caller : RDV, gains, payouts
+  entreprises/                                        # face B2B (claire)
+    dashboard/                                        # validation RDV, candidatures
+    poster/                                           # dépôt mission → checkout
+  (legal)/cgu, confidentialite, mentions-legales      # à faire relire par un avocat
   api/
-    meetings/validate/        # LA route critique : RDV validé → payout + score
-    webhooks/stripe/          # Dépôt escrow confirmé → mission funded
+    og/[username]/                                    # carte joueur en image OG
+    cron/auto-validate, cron/close-season             # crons Vercel (vercel.json)
+    webhooks/stripe/                                  # dépôt escrow → mission funded
+    meetings/validate/                                # back-office (secret interne)
 lib/
-  config.ts                   # Marque, commission (15%), règles de points
-  ranking.ts                  # Tiers Bronze→Légende, progression, formats
-  data.ts                     # Couche données : Supabase ou mode démo
-  stripe.ts                   # Escrow : dépôt, onboarding Express, transfers
-  supabase.ts                 # Clients public + service role
-supabase/migrations/
-  001_init.sql                # Schéma complet + RLS
-  002_validate_meeting.sql    # Transaction atomique de validation (score+ledger)
+  config.ts                # marque, commission, règles de points — LE fichier à régler
+  ranking.ts (+tests)      # tiers, progression
+  actions/                 # server actions (auth, missions, RDV)
+  dashboard-data.ts        # données dashboards (Supabase ou démo)
+  meeting-validation.ts    # validation + payout (action, cron, API)
+  stripe.ts, supabase*.ts
+supabase/migrations/       # 001 schéma+RLS · 002 validate_meeting · 003 flux V1
+proxy.ts                   # session + protection des dashboards
 ```
 
-## Le cœur du système : la validation d'un RDV
+**Sécurité :** RLS sur toutes les tables, écritures sensibles uniquement via fonctions Postgres `security definer`, ownership vérifié dans chaque server action, emails de prospects jamais stockés en clair (hash SHA-256), crons et API internes protégés par secrets.
 
-Un RDV validé (preuve calendrier + présence du prospect) déclenche **atomiquement** :
+## Checklist de mise en production
 
-1. Statut `booked → validated`
-2. Libération du payout vers le compte Stripe Connect du caller (prix − 15% de commission)
-3. Écriture au ledger escrow (`release` + `commission`)
-4. Points de saison : 100 pts + bonus de streak (+10/RDV consécutif, max +50)
-5. Stats lifetime (le CV vivant)
-6. Mission complétée si l'objectif est atteint
+1. **Supabase** — créer le projet, exécuter `supabase/migrations/001`, `002`, `003` dans l'ordre (SQL Editor). Activer Realtime sur la table `season_scores` (Database → Replication).
+2. **Stripe** — activer Connect (Express). Créer le webhook → `https://<domaine>/api/webhooks/stripe` avec `payment_intent.succeeded` et `account.updated`.
+3. **Vercel** — importer le repo, poser les variables de `.env.example` (Production + Preview). Les crons de `vercel.json` s'activent au déploiement.
+4. **Vérifier le flux complet en mode test Stripe** : inscription entreprise → mission → paiement (carte test `4242…`) → inscription caller → candidature → acceptation → déclaration RDV → validation → vérifier le transfer dans le dashboard Stripe.
+5. **Légal** — compléter les mentions légales (société), faire relire CGU + confidentialité.
 
-Tout est dans `validate_meeting()` (fonction Postgres, transaction unique) appelée par `POST /api/meetings/validate`.
+## Décisions produit à trancher (associés)
 
-**Anti-farming :** index unique sur le hash du contact prospect par mission (un prospect = un RDV comptabilisé), no-show = −30 pts + streak reset, validation par service role uniquement.
+- Nom définitif (`lib/config.ts` → `BRAND`, un seul endroit) + dépôt INPI + domaine.
+- Montant des récompenses de saison et leur financement (cagnotte sur commission).
+- Règles d'arbitrage des litiges (qui tranche, sous quel SLA).
+- Intégration calendrier (Cal.com / Google Calendar) pour une preuve de RDV encore plus forte — la V1 fonctionne avec validation entreprise + auto-72h.
 
-## Règles du ladder (saison)
+## V2 (brief)
 
-- **Tiers :** Bronze 0 · Argent 300 · Or 800 · Platine 1500 · Diamant 2500 · **Légende = top 10 du ladder**
-- **Saisons de 6 semaines**, reset partiel (on repart avec 20% de ses points)
-- Modifiable dans `lib/config.ts` et `lib/ranking.ts`
-
-## Mise en production
-
-1. **Supabase** : créer un projet, exécuter `supabase/migrations/*.sql` dans l'ordre (SQL Editor), récupérer URL + clés.
-2. **Stripe** : activer Connect (comptes Express), récupérer la clé secrète, créer un webhook → `/api/webhooks/stripe` (événements `payment_intent.succeeded`, `account.updated`).
-3. Copier `.env.example` → `.env.local` et remplir.
-4. Déployer sur Vercel (mêmes variables d'environnement).
-
-Dès que les variables Supabase sont posées, `lib/data.ts` bascule automatiquement du mode démo aux vraies données.
-
-## Reste à faire (V1)
-
-- [ ] Auth Supabase (signup caller / entreprise) + onboarding
-- [ ] Intégration calendrier (Google Calendar / Cal.com) pour la preuve de RDV
-- [ ] Checkout Stripe sur le dépôt de mission (la route et le webhook sont prêts)
-- [ ] Onboarding Stripe Connect des callers (`lib/stripe.ts` prêt)
-- [ ] Realtime sur le leaderboard (Supabase channels)
-- [ ] Back-office validation/litiges
-
-**V2 (brief) :** clips brandés, squads/écuries, rookie spotlight, Cold Call Arena.
-
-## Décisions à trancher (associés)
-
-- Nom définitif (actuellement **ColdKane**, modifiable en un point : `lib/config.ts` → `BRAND`)
-- Définition contractuelle précise d'un « RDV validé »
-- Niveau et financement des récompenses de saison
-- Vérifier dispo `.fr`/`.com` + antériorité INPI
+Clips brandés TikTok/X, squads/écuries, rookie spotlight, Cold Call Arena (events live).

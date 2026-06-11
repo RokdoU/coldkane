@@ -1,13 +1,20 @@
 import type { Mission } from "@/lib/types";
 import { formatEuros, TIER_LABELS } from "@/lib/ranking";
+import { applyToMission } from "@/lib/actions/missions";
 import { Countdown } from "./countdown";
 import { Lock, Zap } from "./icons";
 
-export function MissionCard({ mission }: { mission: Mission }) {
+export function MissionCard({
+  mission,
+  canApply = false,
+}: {
+  mission: Mission;
+  canApply?: boolean;
+}) {
   const progress = Math.min(mission.meetingsValidated / mission.meetingsTarget, 1);
   return (
     <article
-      className={`group cursor-pointer rounded-xl border bg-night-800 p-5 transition-colors duration-200 ${
+      className={`group rounded-xl border bg-night-800 p-5 transition-colors duration-200 ${
         mission.isBounty
           ? "border-ember-500/35 hover:border-ember-500/60"
           : "border-night-600 hover:border-night-500"
@@ -63,6 +70,23 @@ export function MissionCard({ mission }: { mission: Mission }) {
           />
         </div>
       </div>
+
+      {canApply && (
+        <form
+          action={async () => {
+            "use server";
+            await applyToMission(mission.id);
+          }}
+          className="mt-4"
+        >
+          <button
+            type="submit"
+            className="w-full cursor-pointer rounded-md border border-night-500 px-4 py-2.5 text-sm font-medium text-foreground/80 transition-colors duration-200 hover:border-ice-500/50 hover:text-ice-300"
+          >
+            Postuler à cette mission
+          </button>
+        </form>
+      )}
     </article>
   );
 }
