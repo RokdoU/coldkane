@@ -20,6 +20,9 @@ export function Footer() {
         <a href="/confidentialite" className="cursor-pointer transition-colors duration-200 hover:text-foreground/60">
           Confidentialité
         </a>
+        <a href="/charte-contenu" className="cursor-pointer transition-colors duration-200 hover:text-foreground/60">
+          Charte de contenu
+        </a>
         <a href="/mentions-legales" className="cursor-pointer transition-colors duration-200 hover:text-foreground/60">
           Mentions légales
         </a>

@@ -11,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/leaderboard`, changeFrequency: "hourly", priority: 0.9 },
     { url: `${BASE}/missions`, changeFrequency: "hourly", priority: 0.9 },
     { url: `${BASE}/entreprises`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE}/charte-contenu`, changeFrequency: "monthly", priority: 0.4 },
     ...ladder.map((e) => ({
       url: `${BASE}/c/${e.caller.username}`,
       changeFrequency: "daily" as const,

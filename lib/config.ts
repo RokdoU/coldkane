@@ -2,9 +2,9 @@
 
 export const BRAND = {
   name: "ColdKane",
-  tagline: "Le ladder des cold callers.",
+  tagline: "Pas de CV. Pas de diplôme. Que des résultats.",
   description:
-    "Booke des RDV, grimpe le classement, builde une réputation vérifiée impossible à truquer.",
+    "Booke des RDV, encaisse à la validation, grimpe un classement public impossible à truquer.",
 } as const;
 
 // Commission plateforme sur chaque montant libéré de l'escrow (brief : 15-20%)

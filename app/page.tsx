@@ -4,6 +4,7 @@ import { LadderTable } from "@/components/ladder-table";
 import { MissionCard } from "@/components/mission-card";
 import { KillFeed } from "@/components/kill-feed";
 import { Countdown } from "@/components/countdown";
+import { PayoutCounter, getPlatformStats } from "@/components/payout-counter";
 import {
   getActiveSeason,
   getLadder,
@@ -14,11 +15,12 @@ import { formatEuros } from "@/lib/ranking";
 import { Crosshair, Lock, Phone, ShieldCheck, TrendingUp, Zap } from "@/components/icons";
 
 export default async function Home() {
-  const [season, ladder, missions, validations] = await Promise.all([
+  const [season, ladder, missions, validations, stats] = await Promise.all([
     getActiveSeason(),
     getLadder(),
     getOpenMissions(),
     getRecentValidations(),
+    getPlatformStats(),
   ]);
   const bounties = missions.filter((m) => m.isBounty);
   const liveBounty = bounties[0] ?? null;
@@ -51,22 +53,22 @@ export default async function Home() {
       )}
 
       <main className="flex-1">
-        {/* Hero */}
+        {/* Hero : la promesse, puis tout de suite la preuve — l'argent versé et le feed live */}
         <section className="relative overflow-hidden border-b border-night-600">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_50%_0%,rgb(110_195_212/0.07),transparent)]" />
-          <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-28">
+          <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-24">
             <p className="micro mx-auto w-fit rounded-full border border-night-600 bg-night-800 px-4 py-1.5 text-foreground/55">
               {season.name} — fin le {seasonEnd}
             </p>
             <h1 className="display mx-auto mt-8 max-w-3xl text-center text-5xl leading-[1.08] tracking-tight sm:text-6xl">
-              Ton téléphone. Ton rang.
+              Pas de CV. Pas de diplôme.
               <br />
-              <span className="text-ice-400">Ta réputation.</span>
+              <span className="text-ice-400">Que des résultats.</span>
             </h1>
             <p className="mx-auto mt-7 max-w-xl text-center text-lg leading-relaxed text-foreground/55">
-              Booke des RDV pour des entreprises. Chaque RDV validé est payé
-              via escrow, compté au classement et gravé dans ton profil.
-              Personne ne peut tricher. Personne ne peut te le retirer.
+              Des entreprises paient pour des RDV, budget séquestré. Tu bookes,
+              tu encaisses à la validation, le classement enregistre. Personne
+              ne te demande d&apos;où tu viens — le ladder dit qui tu es.
             </p>
             <div className="mt-9 flex justify-center gap-3">
               <Link
@@ -83,9 +85,12 @@ export default async function Home() {
               </Link>
             </div>
 
-            {/* Kill feed : la plateforme est vivante, en direct */}
-            <div className="mx-auto mt-14 max-w-xl">
-              <KillFeed events={validations} />
+            {/* La preuve avant le discours : le total versé, puis le feed en direct */}
+            <div className="mx-auto mt-12 max-w-xl">
+              <PayoutCounter stats={stats} />
+              <div className="mt-6">
+                <KillFeed events={validations} />
+              </div>
             </div>
 
             {/* Stats clés */}
@@ -151,7 +156,7 @@ export default async function Home() {
                   icon: Crosshair,
                   step: "01",
                   title: "Prends une mission",
-                  text: "Des entreprises déposent missions et bounties, budget séquestré en escrow. Tu choisis, tu attaques.",
+                  text: "Des entreprises déposent missions et bounties, budget séquestré en escrow. Pas de candidature à rallonge : tu choisis, tu attaques.",
                 },
                 {
                   icon: Phone,
@@ -163,7 +168,7 @@ export default async function Home() {
                   icon: ShieldCheck,
                   step: "03",
                   title: "Encaisse et grimpe",
-                  text: "RDV validé = cash libéré instantanément + points + rang. Ta réputation devient ton actif : publique, vérifiée, infalsifiable.",
+                  text: "RDV validé = cash libéré instantanément + points + rang. Chaque euro encaissé est une ligne de ton palmarès : public, vérifié, infalsifiable.",
                 },
               ].map(({ icon: Icon, step, title, text }) => (
                 <div key={step} className="bg-night-800 p-7">
@@ -175,6 +180,34 @@ export default async function Home() {
                   <p className="mt-2 text-sm leading-relaxed text-foreground/50">{text}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Entreprises : le même chiffre rassure l'autre face du marché */}
+        <section className="border-t border-night-600">
+          <div className="mx-auto max-w-6xl px-4 py-16">
+            <div className="flex flex-col items-start justify-between gap-8 rounded-xl border border-night-600 bg-night-800 p-8 sm:flex-row sm:items-center">
+              <div className="max-w-xl">
+                <p className="micro text-foreground/40">Vous êtes une entreprise ?</p>
+                <h2 className="display mt-3 text-2xl tracking-tight">
+                  Vous ne payez que les RDV qui ont eu lieu.
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-foreground/50">
+                  <span className="tnum font-semibold text-ice-300">
+                    {formatEuros(stats.totalPaidCents)}
+                  </span>{" "}
+                  déjà versés aux callers — chaque euro correspond à un RDV
+                  validé, preuve calendrier à l&apos;appui. Budget séquestré,
+                  solde non consommé remboursé.
+                </p>
+              </div>
+              <Link
+                href="/entreprises"
+                className="shrink-0 cursor-pointer rounded-md bg-foreground px-6 py-3 text-sm font-semibold text-background transition-opacity duration-200 hover:opacity-85"
+              >
+                Déposer une mission
+              </Link>
             </div>
           </div>
         </section>

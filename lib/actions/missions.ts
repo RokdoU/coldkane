@@ -10,7 +10,10 @@ import { redirect } from "next/navigation";
 import { supabaseServer, getSessionProfile } from "../supabase-server";
 import { isSupabaseConfigured, supabaseAdmin } from "../supabase";
 import { isStripeConfigured, createEscrowCheckout } from "../stripe";
+import { sendMeetingDeclaredEmail, sendApplicationAcceptedEmail } from "../email";
 import { validateMeetingAndPay } from "../meeting-validation";
+import { tierForPoints, TIER_ORDER, TIER_LABELS } from "../ranking";
+import type { Tier } from "../types";
 
 export interface ActionState {
   error: string | null;
@@ -109,11 +112,16 @@ export async function acceptApplication(assignmentId: string) {
 
   const supabase = await supabaseServer();
   // RLS "company manages applications" garantit l'ownership
-  await supabase
+  const { data: updated } = await supabase
     .from("assignments")
     .update({ status: "active" })
     .eq("id", assignmentId)
-    .eq("status", "applied");
+    .eq("status", "applied")
+    .select("id")
+    .maybeSingle();
+
+  // Notification caller — jamais bloquant
+  if (updated) await sendApplicationAcceptedEmail(assignmentId);
   revalidatePath("/entreprises/dashboard");
 }
 
@@ -188,6 +196,52 @@ export async function applyToMission(missionId: string): Promise<ActionState> {
   if (profile.role !== "caller") return { error: "Réservé aux callers." };
 
   const supabase = await supabaseServer();
+
+  // La mission doit accepter des candidatures (RLS : draft/cancelled invisibles)
+  const { data: mission } = await supabase
+    .from("missions")
+    .select("status, min_tier")
+    .eq("id", missionId)
+    .single();
+  if (!mission || !["funded", "active"].includes(mission.status)) {
+    return { error: "Cette mission n'accepte plus de candidatures." };
+  }
+
+  // Tier minimum requis (filtre qualité posé par l'entreprise)
+  if (mission.min_tier) {
+    const { data: season } = await supabase
+      .from("seasons")
+      .select("id")
+      .eq("is_active", true)
+      .single();
+    let points = 0;
+    let rank: number | undefined;
+    if (season) {
+      const { data: score } = await supabase
+        .from("season_scores")
+        .select("points")
+        .eq("season_id", season.id)
+        .eq("caller_id", profile.id)
+        .single();
+      points = score?.points ?? 0;
+      if (score) {
+        const { count } = await supabase
+          .from("season_scores")
+          .select("*", { count: "exact", head: true })
+          .eq("season_id", season.id)
+          .gt("points", points);
+        rank = (count ?? 0) + 1;
+      }
+    }
+    const tier = tierForPoints(points, rank);
+    const required = mission.min_tier as Tier;
+    if (TIER_ORDER.indexOf(tier) < TIER_ORDER.indexOf(required)) {
+      return {
+        error: `Mission réservée au tier ${TIER_LABELS[required]} et au-dessus.`,
+      };
+    }
+  }
+
   const { error } = await supabase.from("assignments").insert({
     mission_id: missionId,
     caller_id: profile.id,
@@ -225,34 +279,33 @@ export async function declareMeeting(
     return { error: "La date du RDV est invalide." };
   }
 
-  const supabase = await supabaseServer();
-  const { data: assignment } = await supabase
-    .from("assignments")
-    .select("id, mission_id, status")
-    .eq("id", assignmentId)
-    .eq("caller_id", profile.id)
-    .single();
-  if (!assignment || assignment.status !== "active") {
-    return { error: "Mission non active pour toi (candidature pas encore acceptée ?)." };
-  }
-
   // Hash anti-farming : jamais l'email en clair (RGPD), dédup par mission en DB
   const contactHash = createHash("sha256").update(prospectEmail).digest("hex");
 
-  const { error } = await supabase.from("meetings").insert({
-    assignment_id: assignment.id,
-    mission_id: assignment.mission_id,
-    caller_id: profile.id,
-    prospect_company: prospectCompany,
-    prospect_contact_hash: contactHash,
-    scheduled_at: scheduled.toISOString(),
-    status: "booked",
+  const supabase = await supabaseServer();
+  const { data: meeting, error } = await supabase.rpc("declare_meeting", {
+    p_assignment_id: assignmentId,
+    p_prospect_company: prospectCompany,
+    p_contact_hash: contactHash,
+    p_scheduled_at: scheduled.toISOString(),
   });
   if (error) {
     if (error.code === "23505") {
       return { error: "Ce prospect a déjà un RDV comptabilisé sur cette mission." };
     }
     return { error: error.message };
+  }
+
+  // Notification entreprise (valider/contester sous 72h) — jamais bloquant
+  if (meeting) {
+    await sendMeetingDeclaredEmail(
+      meeting as {
+        mission_id: string;
+        caller_id: string;
+        prospect_company: string;
+        scheduled_at: string;
+      },
+    );
   }
 
   revalidatePath("/dashboard");

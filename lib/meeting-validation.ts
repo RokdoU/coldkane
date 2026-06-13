@@ -4,6 +4,7 @@
 
 import { supabaseAdmin } from "./supabase";
 import { isStripeConfigured, releaseMeetingPayout } from "./stripe";
+import { sendMeetingValidatedEmails } from "./email";
 import { COMMISSION_RATE } from "./config";
 
 export async function validateMeetingAndPay(
@@ -22,7 +23,7 @@ export async function validateMeetingAndPay(
   if (isStripeConfigured()) {
     const { data: caller } = await db
       .from("callers")
-      .select("stripe_account_id")
+      .select("stripe_account_id, payouts_enabled")
       .eq("profile_id", meeting.caller_id)
       .single();
     const { data: mission } = await db
@@ -31,21 +32,30 @@ export async function validateMeetingAndPay(
       .eq("id", meeting.mission_id)
       .single();
 
-    if (caller?.stripe_account_id && mission) {
-      const { transfer } = await releaseMeetingPayout({
-        meetingId,
-        missionId: meeting.mission_id,
-        callerStripeAccountId: caller.stripe_account_id,
-        pricePerMeetingCents: mission.price_per_meeting_cents,
-      });
-      await db
-        .from("meetings")
-        .update({ stripe_transfer_id: transfer.id })
-        .eq("id", meetingId);
+    // Payout immédiat seulement si le compte Connect est prêt. Sinon, ou si
+    // le transfer échoue (solde plateforme indispo ~J+7 après un dépôt,
+    // réseau…), le RDV reste validé avec stripe_transfer_id null : le cron
+    // retry-payouts le rattrape, idempotency key Stripe = pas de double paie.
+    if (caller?.stripe_account_id && caller.payouts_enabled && mission) {
+      try {
+        const { transfer } = await releaseMeetingPayout({
+          meetingId,
+          missionId: meeting.mission_id,
+          callerStripeAccountId: caller.stripe_account_id,
+          pricePerMeetingCents: mission.price_per_meeting_cents,
+        });
+        await db
+          .from("meetings")
+          .update({ stripe_transfer_id: transfer.id })
+          .eq("id", meetingId);
+      } catch (err) {
+        console.error(`payout différé (meeting ${meetingId}) :`, err);
+      }
     }
-    // Pas de compte Connect : le RDV est validé et compté, le payout
-    // partira quand le caller aura terminé son onboarding Stripe.
   }
+
+  // Notifications caller (payout net) + entreprise (récap) — jamais bloquant
+  await sendMeetingValidatedEmails(meeting);
 
   return { ok: true };
 }

@@ -13,6 +13,7 @@ import { DemoBanner } from "@/components/demo-banner";
 import { MeetingStatusBadge } from "@/components/meeting-status-badge";
 import { RivalCard } from "@/components/rival-card";
 import { ReferralCard } from "@/components/referral-card";
+import { WinShareCard } from "@/components/win-share-card";
 
 export const metadata: Metadata = {
   title: "Mon dashboard",
@@ -25,6 +26,8 @@ export default async function CallerDashboardPage() {
     getRivalInfo(profile?.username ?? null),
   ]);
   const activeAssignments = data.assignments.filter((a) => a.status === "active");
+  // Dernier win partageable : le payout validé le plus récent (meetings triés du plus récent au plus ancien)
+  const lastWin = data.meetings.find((m) => m.status === "validated" && m.payoutCents);
 
   return (
     <>
@@ -188,6 +191,17 @@ export default async function CallerDashboardPage() {
             </div>
           )}
         </section>
+
+        {/* Partage du dernier win : la carte événement, prête à poster */}
+        {lastWin && lastWin.payoutCents && (
+          <div className="mt-6">
+            <WinShareCard
+              username={profile?.username ?? "toncall"}
+              amountCents={lastWin.payoutCents}
+              eventId={lastWin.id}
+            />
+          </div>
+        )}
 
         {/* Parrainage + profil public */}
         <div className="mt-6 grid gap-6 lg:grid-cols-2">

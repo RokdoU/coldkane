@@ -78,23 +78,31 @@ export async function releaseMeetingPayout(params: {
 }) {
   const commission = Math.round(params.pricePerMeetingCents * COMMISSION_RATE);
   const payout = params.pricePerMeetingCents - commission;
-  const transfer = await stripe().transfers.create({
-    amount: payout,
-    currency: "eur",
-    destination: params.callerStripeAccountId,
-    metadata: {
-      meeting_id: params.meetingId,
-      mission_id: params.missionId,
-      commission_cents: String(commission),
+  const transfer = await stripe().transfers.create(
+    {
+      amount: payout,
+      currency: "eur",
+      destination: params.callerStripeAccountId,
+      metadata: {
+        meeting_id: params.meetingId,
+        mission_id: params.missionId,
+        commission_cents: String(commission),
+      },
     },
-  });
+    { idempotencyKey: `transfer-${params.meetingId}` },
+  );
   return { transfer, payout, commission };
 }
 
-// 4. Remboursement du budget non consommé (mission annulée/expirée)
+// 4. Remboursement du budget non consommé (mission annulée/expirée).
+// Idempotency key = le PaymentIntent (un seul escrow par mission) : un retry
+// après timeout ne peut pas rembourser deux fois.
 export async function refundRemainingBudget(paymentIntentId: string, amountCents: number) {
-  return stripe().refunds.create({
-    payment_intent: paymentIntentId,
-    amount: amountCents,
-  });
+  return stripe().refunds.create(
+    {
+      payment_intent: paymentIntentId,
+      amount: amountCents,
+    },
+    { idempotencyKey: `refund-${paymentIntentId}` },
+  );
 }

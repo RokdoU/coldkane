@@ -8,6 +8,7 @@ import { getCompanyDashboard } from "@/lib/dashboard-data";
 import { formatEuros } from "@/lib/ranking";
 import { acceptApplication, rejectApplication, companyValidateMeeting } from "@/lib/actions/missions";
 import { DisputeForm } from "./dispute-form";
+import { CloseMissionForm } from "./close-mission-form";
 
 export const metadata: Metadata = {
   title: "Dashboard entreprise",
@@ -240,12 +241,24 @@ export default async function CompanyDashboardPage({
                       {formatEuros(m.budgetCents)}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link
-                        href={`/missions/${m.id}`}
-                        className="cursor-pointer text-xs font-medium text-slate-400 underline-offset-2 hover:text-slate-700 hover:underline"
-                      >
-                        Voir la fiche
-                      </Link>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <Link
+                          href={`/missions/${m.id}`}
+                          className="cursor-pointer text-xs font-medium text-slate-400 underline-offset-2 hover:text-slate-700 hover:underline"
+                        >
+                          Voir la fiche
+                        </Link>
+                        {["funded", "active"].includes(m.status) && (
+                          /* Solde estimé : chaque RDV validé consomme exactement
+                             price_per_meeting (release + commission) */
+                          <CloseMissionForm
+                            missionId={m.id}
+                            remainingCents={
+                              m.budgetCents - m.meetingsValidated * m.pricePerMeetingCents
+                            }
+                          />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

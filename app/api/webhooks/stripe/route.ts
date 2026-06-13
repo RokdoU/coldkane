@@ -44,14 +44,11 @@ export async function POST(req: NextRequest) {
       break;
     }
     case "account.updated": {
-      // le caller a fini son onboarding Connect → payouts possibles
       const account = event.data.object;
-      if (account.payouts_enabled) {
-        await db
-          .from("callers")
-          .update({ stripe_account_id: account.id })
-          .eq("stripe_account_id", account.id);
-      }
+      await db
+        .from("callers")
+        .update({ payouts_enabled: Boolean(account.payouts_enabled) })
+        .eq("stripe_account_id", account.id);
       break;
     }
   }
