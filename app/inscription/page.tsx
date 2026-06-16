@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Nav, Footer } from "@/components/nav";
 import { Users } from "@/components/icons";
 import { SignupForm } from "./signup-form";
@@ -7,14 +8,21 @@ export const metadata: Metadata = {
   title: "Inscription",
 };
 
+const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
+
 export default async function InscriptionPage({
   searchParams,
 }: {
   searchParams: Promise<{ ref?: string }>;
 }) {
   const { ref } = await searchParams;
-  // Le pseudo du parrain suit les mêmes règles que tous les usernames
-  const referredBy = ref && /^[a-z0-9_]{3,20}$/.test(ref) ? ref : null;
+  // Parrain : depuis ?ref, sinon depuis le cookie d'attribution posé par le
+  // middleware (lien d'affiliation suivi depuis la home jusqu'au signup).
+  let referredBy = ref && USERNAME_RE.test(ref) ? ref : null;
+  if (!referredBy) {
+    const cookieRef = (await cookies()).get("ck_ref")?.value;
+    if (cookieRef && USERNAME_RE.test(cookieRef)) referredBy = cookieRef;
+  }
 
   return (
     <>

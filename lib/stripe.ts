@@ -94,6 +94,42 @@ export async function releaseMeetingPayout(params: {
   return { transfer, payout, commission };
 }
 
+// 3b. Rev-share parrain : part des gains d'un filleul reversée à son parrain.
+// Idempotency key = le RDV (un seul rev-share par RDV de filleul).
+export async function createReferralTransfer(params: {
+  meetingId: string;
+  parrainStripeAccountId: string;
+  amountCents: number;
+}) {
+  return stripe().transfers.create(
+    {
+      amount: params.amountCents,
+      currency: "eur",
+      destination: params.parrainStripeAccountId,
+      metadata: { meeting_id: params.meetingId, kind: "referral_share" },
+    },
+    { idempotencyKey: `referral-${params.meetingId}` },
+  );
+}
+
+// 3c. Prime d'apport : versée à l'apporteur quand l'entreprise ramenée active
+// (1er dépôt escrow). Idempotency key = l'entreprise (une seule prime).
+export async function createApporteurTransfer(params: {
+  companyId: string;
+  apporteurStripeAccountId: string;
+  amountCents: number;
+}) {
+  return stripe().transfers.create(
+    {
+      amount: params.amountCents,
+      currency: "eur",
+      destination: params.apporteurStripeAccountId,
+      metadata: { company_id: params.companyId, kind: "apporteur_bonus" },
+    },
+    { idempotencyKey: `apporteur-${params.companyId}` },
+  );
+}
+
 // 4. Remboursement du budget non consommé (mission annulée/expirée).
 // Idempotency key = le PaymentIntent (un seul escrow par mission) : un retry
 // après timeout ne peut pas rembourser deux fois.

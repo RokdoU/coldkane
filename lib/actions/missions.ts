@@ -10,9 +10,18 @@ import { redirect } from "next/navigation";
 import { supabaseServer, getSessionProfile } from "../supabase-server";
 import { isSupabaseConfigured, supabaseAdmin } from "../supabase";
 import { isStripeConfigured, createEscrowCheckout } from "../stripe";
-import { sendMeetingDeclaredEmail, sendApplicationAcceptedEmail } from "../email";
+import {
+  sendMeetingDeclaredEmail,
+  sendApplicationAcceptedEmail,
+  sendDisputeOpenedEmails,
+} from "../email";
 import { validateMeetingAndPay } from "../meeting-validation";
 import { tierForPoints, TIER_ORDER, TIER_LABELS } from "../ranking";
+import { DISPUTE, EARN_AS_YOU_GO } from "../config";
+import {
+  checkDeclarationRateLimit,
+  flagCollusionIfSuspicious,
+} from "../fraud";
 import type { Tier } from "../types";
 
 export interface ActionState {
@@ -148,7 +157,7 @@ export async function companyValidateMeeting(meetingId: string) {
   const db = supabaseAdmin();
   const { data: meeting } = await db
     .from("meetings")
-    .select("id, missions!inner(company_id)")
+    .select("id, caller_id, created_at, missions!inner(company_id)")
     .eq("id", meetingId)
     .single();
   const missionOwner = (meeting?.missions as unknown as { company_id: string } | null)
@@ -157,7 +166,20 @@ export async function companyValidateMeeting(meetingId: string) {
     return;
   }
 
-  await validateMeetingAndPay(meetingId, profile.id);
+  const result = await validateMeetingAndPay(meetingId, profile.id);
+
+  // Anti-collusion : signaux après une validation réussie (validation éclair,
+  // même IP d'inscription caller/entreprise). NON BLOQUANT : flag + alerte.
+  if (result.ok) {
+    await flagCollusionIfSuspicious({
+      meetingId: meeting.id,
+      callerId: meeting.caller_id,
+      companyId: profile.id,
+      declaredAt: meeting.created_at,
+      validatedAt: new Date().toISOString(),
+    });
+  }
+
   revalidatePath("/entreprises/dashboard");
 }
 
@@ -181,8 +203,14 @@ export async function companyDisputeMeeting(
   });
   if (error) return { error: error.message };
 
+  // Notifie les deux parties — jamais bloquant
+  await sendDisputeOpenedEmails(meetingId, reason);
+
   revalidatePath("/entreprises/dashboard");
-  return { error: null, success: "RDV contesté. Notre équipe arbitrera sous 48h." };
+  return {
+    error: null,
+    success: `RDV contesté. Le caller a ${DISPUTE.slaHours}h pour répondre, sans quoi le litige est tranché automatiquement.`,
+  };
 }
 
 // =====================================================
@@ -264,6 +292,11 @@ export async function declareMeeting(
   const profile = await getSessionProfile();
   if (!profile || profile.role !== "caller") return { error: "Non autorisé." };
 
+  // Anti-farming : plafond de déclarations sur 24h glissantes. Refus propre.
+  if (!(await checkDeclarationRateLimit(profile.id))) {
+    return { error: "Plafond de déclarations atteint pour aujourd'hui." };
+  }
+
   const assignmentId = String(formData.get("assignmentId") ?? "");
   const prospectCompany = String(formData.get("prospectCompany") ?? "").trim();
   const prospectEmail = String(formData.get("prospectEmail") ?? "")
@@ -288,6 +321,10 @@ export async function declareMeeting(
     p_prospect_company: prospectCompany,
     p_contact_hash: contactHash,
     p_scheduled_at: scheduled.toISOString(),
+    // Plafond earn-as-you-go (config = source de vérité, appliqué en DB)
+    p_base_open: EARN_AS_YOU_GO.baseOpenMeetings,
+    p_unlock_per: EARN_AS_YOU_GO.unlockPerValidated,
+    p_max_open: EARN_AS_YOU_GO.maxOpenMeetings,
   });
   if (error) {
     if (error.code === "23505") {
@@ -313,5 +350,33 @@ export async function declareMeeting(
     error: null,
     success:
       "RDV déclaré. Il sera validé par l'entreprise (ou automatiquement 72h après le RDV s'il n'est pas contesté).",
+  };
+}
+
+export async function submitDisputeEvidence(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  if (!isSupabaseConfigured()) return DEMO;
+  const profile = await getSessionProfile();
+  if (!profile || profile.role !== "caller") return { error: "Non autorisé." };
+
+  const meetingId = String(formData.get("meetingId") ?? "");
+  const evidence = String(formData.get("evidence") ?? "").trim();
+  if (!evidence) return { error: "Décris ta preuve (lien d'agenda, échange, enregistrement…)." };
+
+  // RPC security definer : vérifie l'ownership et le statut 'disputed' en DB
+  const supabase = await supabaseServer();
+  const { error } = await supabase.rpc("submit_dispute_evidence", {
+    p_meeting_id: meetingId,
+    p_evidence: evidence,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard");
+  return {
+    error: null,
+    success:
+      "Preuve enregistrée. Sans escalade de l'entreprise, le RDV sera validé à l'échéance du litige.",
   };
 }

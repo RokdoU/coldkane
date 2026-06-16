@@ -36,7 +36,7 @@ export async function getLadder(): Promise<LadderEntry[]> {
     .from("season_scores")
     .select(
       `points, meetings_validated, no_shows, best_streak,
-       callers!inner(profile_id, headline, lifetime_points, lifetime_meetings_validated,
+       callers!inner(profile_id, headline, lifetime_points, lifetime_meetings_validated, pitch_video_url,
          profiles!inner(username, full_name, avatar_url, bio))`,
     )
     .eq("season_id", season.id)
@@ -58,6 +58,7 @@ export async function getLadder(): Promise<LadderEntry[]> {
         lifetimePoints: caller.lifetime_points as number,
         lifetimeMeetingsValidated: caller.lifetime_meetings_validated as number,
         badges: [],
+        pitchVideoUrl: (caller.pitch_video_url as string) ?? null,
       },
       points: row.points as number,
       meetingsValidated: row.meetings_validated as number,

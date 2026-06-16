@@ -7,12 +7,33 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = ["/dashboard", "/entreprises/dashboard"];
 
+const REF_RE = /^[a-z0-9_]{3,20}$/;
+const REF_COOKIE = "ck_ref";
+
 export async function proxy(request: NextRequest) {
+  // Attribution affiliation : un visiteur arrivé via ?ref=<pseudo> est rattaché
+  // au parrain/apporteur via un cookie 30j (survit à la navigation jusqu'au
+  // signup). Posé une seule fois par visiteur (premier ?ref vu).
+  const refParam = request.nextUrl.searchParams.get("ref");
+  const validRef = refParam && REF_RE.test(refParam) ? refParam : null;
+  const needsRefCookie = validRef && !request.cookies.get(REF_COOKIE);
+  const setRefCookie = (res: NextResponse) => {
+    if (needsRefCookie) {
+      res.cookies.set(REF_COOKIE, validRef!, {
+        maxAge: 60 * 60 * 24 * 30,
+        path: "/",
+        sameSite: "lax",
+        httpOnly: true,
+      });
+    }
+    return res;
+  };
+
   const configured = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
-  if (!configured) return NextResponse.next();
+  if (!configured) return setRefCookie(NextResponse.next());
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(
@@ -47,10 +68,19 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/connexion";
     url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
+    return setRefCookie(NextResponse.redirect(url));
   }
 
-  return response;
+  // Trace le clic d'affiliation (une fois par visiteur) — non bloquant
+  if (needsRefCookie) {
+    try {
+      await supabase.rpc("track_referral_click", { p_ref: validRef, p_path: pathname });
+    } catch {
+      // analytics best-effort : ne jamais bloquer la requête
+    }
+  }
+
+  return setRefCookie(response);
 }
 
 export const config = {

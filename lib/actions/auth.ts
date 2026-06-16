@@ -7,6 +7,14 @@
 import { redirect } from "next/navigation";
 import { supabaseServer } from "../supabase-server";
 import { isSupabaseConfigured } from "../supabase";
+import {
+  clientIp,
+  clientUserAgent,
+  checkLoginRateLimit,
+  recordLoginAttempt,
+  recordSignupFingerprint,
+  countRecentSignupsFromIp,
+} from "../fraud";
 
 export interface AuthState {
   error: string | null;
@@ -83,6 +91,17 @@ export async function signUp(
     return { error: error.message };
   }
 
+  // Anti-fraude : capture de l'empreinte d'inscription + détection multi-comptes.
+  // Le profil est créé par le trigger handle_new_user à partir des metadata ;
+  // on attache l'IP/UA au profil puis on compte les inscriptions depuis cette IP.
+  // NON BLOQUANT : un dépassement insère un fraud_flag sans refuser l'inscription.
+  if (data.user) {
+    const ip = await clientIp();
+    const ua = await clientUserAgent();
+    await recordSignupFingerprint(data.user.id, ip, ua);
+    await countRecentSignupsFromIp(ip, data.user.id);
+  }
+
   // Selon la config Supabase, la session peut nécessiter une confirmation email
   if (!data.session) {
     redirect("/connexion?confirm=1");
@@ -105,11 +124,21 @@ export async function signIn(
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "");
 
+  // Anti brute-force : refus propre au-delà du plafond horaire (email OU IP).
+  const ip = await clientIp();
+  if (!(await checkLoginRateLimit(email, ip))) {
+    return { error: "Trop de tentatives, réessaie dans une heure." };
+  }
+
   const supabase = await supabaseServer();
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
+
+  // Trace la tentative (succès/échec) pour le rate limiting.
+  await recordLoginAttempt(email, ip, !error);
+
   if (error) {
     return { error: "Email ou mot de passe incorrect." };
   }

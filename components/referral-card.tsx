@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { REFERRAL } from "@/lib/config";
-import { Check, Copy, Users } from "./icons";
+import { ArrowRight, Check, Copy, Users } from "./icons";
 
 export function ReferralCard({ username }: { username: string }) {
   const [copied, setCopied] = useState(false);
@@ -41,6 +42,15 @@ export function ReferralCard({ username }: { username: string }) {
           {copied ? "Copié" : "Copier"}
         </button>
       </div>
+
+      {/* Espace dédié : suivi des filleuls, gains générés, commission cumulée */}
+      <Link
+        href="/ambassadeur"
+        className="mt-4 inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-ice-400 transition-colors duration-200 hover:text-ice-300"
+      >
+        Voir mon espace ambassadeur
+        <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
     </div>
   );
 }

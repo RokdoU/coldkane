@@ -14,6 +14,8 @@ import { MeetingStatusBadge } from "@/components/meeting-status-badge";
 import { RivalCard } from "@/components/rival-card";
 import { ReferralCard } from "@/components/referral-card";
 import { WinShareCard } from "@/components/win-share-card";
+import { DisputeEvidenceForm } from "./dispute-evidence-form";
+import { PitchVideoForm } from "@/components/pitch-video-form";
 
 export const metadata: Metadata = {
   title: "Mon dashboard",
@@ -28,6 +30,8 @@ export default async function CallerDashboardPage() {
   const activeAssignments = data.assignments.filter((a) => a.status === "active");
   // Dernier win partageable : le payout validé le plus récent (meetings triés du plus récent au plus ancien)
   const lastWin = data.meetings.find((m) => m.status === "validated" && m.payoutCents);
+  // RDV en litige : le caller peut fournir une preuve avant la résolution auto
+  const disputedMeetings = data.meetings.filter((m) => m.status === "disputed");
 
   return (
     <>
@@ -192,6 +196,28 @@ export default async function CallerDashboardPage() {
           )}
         </section>
 
+        {/* RDV en litige : fournir une preuve avant la résolution automatique */}
+        {disputedMeetings.length > 0 && (
+          <section className="mt-6 rounded-xl border border-night-600 bg-night-800 p-6">
+            <h2 className="display text-lg">RDV contestés</h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-foreground/45">
+              Fournis une preuve avant l&apos;échéance du litige. Sans preuve, le
+              RDV est annulé automatiquement.
+            </p>
+            <div className="mt-4 flex flex-col gap-3">
+              {disputedMeetings.map((m) => (
+                <DisputeEvidenceForm
+                  key={m.id}
+                  meetingId={m.id}
+                  prospectCompany={m.prospectCompany}
+                  reason={m.disputeReason}
+                  existingEvidence={m.callerEvidence}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Partage du dernier win : la carte événement, prête à poster */}
         {lastWin && lastWin.payoutCents && (
           <div className="mt-6">
@@ -223,6 +249,19 @@ export default async function CallerDashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Vidéo de pitch : preuve sociale optionnelle sur le profil public.
+            La plateforme n'héberge rien — juste un lien externe. */}
+        <section className="mt-6 rounded-xl border border-night-600 bg-night-800 p-6">
+          <h2 className="display text-lg">Ta vidéo de pitch</h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-foreground/45">
+            Optionnel. Colle le lien d&apos;une vidéo où tu te présentes
+            (TikTok, Instagram ou YouTube) : elle apparaîtra sur ton profil
+            public comme preuve sociale. On n&apos;héberge aucune vidéo, on
+            renvoie simplement vers la tienne.
+          </p>
+          <PitchVideoForm currentUrl={data.pitchVideoUrl} />
+        </section>
       </main>
       <Footer />
     </>

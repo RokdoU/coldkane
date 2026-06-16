@@ -6,7 +6,7 @@
 import { Resend } from "resend";
 import { supabaseAdmin } from "./supabase";
 import { formatEuros } from "./ranking";
-import { POINTS } from "./config";
+import { POINTS, DISPUTE } from "./config";
 
 export function isEmailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY);
@@ -282,5 +282,161 @@ export async function sendApplicationAcceptedEmail(assignmentId: string): Promis
   } catch (err) {
     console.error("email candidature acceptée :", err);
     return false;
+  }
+}
+
+// =====================================================
+// Litiges : ouverture, rappel avant résolution auto, résolution.
+// Charge les destinataires (caller + entreprise) depuis le meeting.
+// =====================================================
+
+// Résout les deux destinataires d'un litige + le titre de la mission
+async function disputeRecipients(meetingId: string): Promise<{
+  callerEmail: string | null;
+  companyEmail: string | null;
+  missionTitle: string;
+  prospectCompany: string;
+} | null> {
+  const db = supabaseAdmin();
+  const { data: meeting } = await db
+    .from("meetings")
+    .select("caller_id, prospect_company, missions!inner(title, company_id)")
+    .eq("id", meetingId)
+    .single();
+  if (!meeting) return null;
+  const mission = meeting.missions as unknown as { title: string; company_id: string };
+  const [callerEmail, companyEmail] = await Promise.all([
+    profileEmail(meeting.caller_id as string),
+    profileEmail(mission.company_id),
+  ]);
+  return {
+    callerEmail,
+    companyEmail,
+    missionTitle: mission.title,
+    prospectCompany: meeting.prospect_company as string,
+  };
+}
+
+// (e) Litige ouvert → caller (fournir une preuve) + entreprise (récap)
+export async function sendDisputeOpenedEmails(
+  meetingId: string,
+  reason: string,
+): Promise<void> {
+  if (!isEmailConfigured()) return;
+  try {
+    const r = await disputeRecipients(meetingId);
+    if (!r) return;
+    const { slaHours } = DISPUTE;
+
+    if (r.callerEmail) {
+      await sendEmail(
+        r.callerEmail,
+        `RDV contesté — ${r.missionTitle}`,
+        layout(
+          heading("Un de tes RDV est contesté") +
+            `<p style="margin:0;">L'entreprise conteste le RDV avec <strong>${r.prospectCompany}</strong> sur la mission <strong>${r.missionTitle}</strong>.</p>` +
+            detailRows([["Motif", reason]]) +
+            `<p style="margin:16px 0 0;">Tu as <strong>${slaHours}&nbsp;h</strong> pour fournir une preuve (lien d'agenda, échange, enregistrement…). Sans preuve dans ce délai, le RDV sera annulé automatiquement.</p>` +
+            button(`${siteUrl()}/dashboard`, "Fournir une preuve"),
+        ),
+      );
+    }
+    if (r.companyEmail) {
+      await sendEmail(
+        r.companyEmail,
+        `Contestation enregistrée — ${r.missionTitle}`,
+        layout(
+          heading("Votre contestation est enregistrée") +
+            `<p style="margin:0;">Le RDV avec <strong>${r.prospectCompany}</strong> est gelé. Le caller dispose de ${slaHours}&nbsp;h pour répondre.</p>` +
+            `<p style="font-size:13px;color:#71717a;margin:16px 0 0;">Sans preuve du caller dans ce délai, le RDV est annulé et la place est rendue à votre budget. Avec preuve recevable et sans escalade de notre part, il sera validé.</p>`,
+        ),
+      );
+    }
+  } catch (err) {
+    console.error("email litige ouvert :", err);
+  }
+}
+
+// (f) Rappel résolution auto imminente → caller (nudge preuve) + entreprise
+export async function sendDisputeReminderEmails(meetingId: string): Promise<boolean> {
+  if (!isEmailConfigured()) return false;
+  try {
+    const r = await disputeRecipients(meetingId);
+    if (!r) return false;
+    let sent = false;
+    if (r.callerEmail) {
+      sent =
+        (await sendEmail(
+          r.callerEmail,
+          `Dernier rappel — RDV ${r.prospectCompany}`,
+          layout(
+            heading("Résolution automatique imminente") +
+              `<p style="margin:0;">Le litige sur le RDV avec <strong>${r.prospectCompany}</strong> sera tranché automatiquement dans moins de ${DISPUTE.reminderBeforeHours}&nbsp;h.</p>` +
+              `<p style="margin:16px 0 0;">Sans preuve de ta part, il sera annulé. Fournis-la maintenant.</p>` +
+              button(`${siteUrl()}/dashboard`, "Fournir une preuve"),
+          ),
+        )) || sent;
+    }
+    if (r.companyEmail) {
+      await sendEmail(
+        r.companyEmail,
+        `Litige bientôt résolu — ${r.missionTitle}`,
+        layout(
+          heading("Résolution automatique imminente") +
+            `<p style="margin:0;">Le litige sur le RDV avec <strong>${r.prospectCompany}</strong> sera tranché automatiquement dans moins de ${DISPUTE.reminderBeforeHours}&nbsp;h selon la règle par défaut.</p>`,
+        ),
+      );
+    }
+    return sent;
+  } catch (err) {
+    console.error("email rappel litige :", err);
+    return false;
+  }
+}
+
+// (g) Litige résolu → caller + entreprise, selon l'issue
+export async function sendDisputeResolvedEmails(
+  meetingId: string,
+  outcome: "validated" | "cancelled",
+): Promise<void> {
+  if (!isEmailConfigured()) return;
+  try {
+    const r = await disputeRecipients(meetingId);
+    if (!r) return;
+    const callerWon = outcome === "validated";
+
+    if (r.callerEmail) {
+      await sendEmail(
+        r.callerEmail,
+        callerWon
+          ? `Litige tranché en ta faveur — ${r.prospectCompany}`
+          : `Litige tranché — RDV annulé`,
+        layout(
+          heading(callerWon ? "Litige tranché : RDV validé" : "Litige tranché : RDV annulé") +
+            `<p style="margin:0;">${
+              callerWon
+                ? `Le RDV avec <strong>${r.prospectCompany}</strong> a été validé. Ton paiement part vers ton compte.`
+                : `Le RDV avec <strong>${r.prospectCompany}</strong> a été annulé faute de preuve fournie dans le délai.`
+            }</p>` +
+            button(`${siteUrl()}/dashboard`, "Voir mon dashboard"),
+        ),
+      );
+    }
+    if (r.companyEmail) {
+      await sendEmail(
+        r.companyEmail,
+        `Litige résolu — ${r.missionTitle}`,
+        layout(
+          heading("Litige résolu") +
+            `<p style="margin:0;">${
+              callerWon
+                ? `Le RDV avec <strong>${r.prospectCompany}</strong> a été validé (preuve recevable, pas d'escalade). Le montant a été débité de votre escrow.`
+                : `Le RDV avec <strong>${r.prospectCompany}</strong> a été annulé. La place a été rendue à votre budget.`
+            }</p>`,
+        ),
+      );
+    }
+  } catch (err) {
+    console.error("email litige résolu :", err);
   }
 }

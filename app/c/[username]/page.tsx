@@ -137,6 +137,25 @@ export default async function CallerProfilePage({ params }: Props) {
           </div>
         </section>
 
+        {/* Pitch en vidéo : preuve sociale optionnelle. La plateforme n'héberge
+            rien — simple lien vers la vidéo (TikTok/Instagram/YouTube). */}
+        {caller.pitchVideoUrl && (
+          <section className="mt-4 rounded-xl border border-night-600 bg-night-800 p-6">
+            <h2 className="micro text-foreground/40">Pitch en vidéo</h2>
+            <p className="mt-3 text-sm leading-relaxed text-foreground/55">
+              {caller.username} se présente en vidéo.
+            </p>
+            <a
+              href={caller.pitchVideoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex w-fit cursor-pointer items-center gap-2 rounded-md border border-ice-500/30 bg-ice-500/5 px-4 py-2.5 text-sm font-medium text-ice-300 transition-colors duration-200 hover:border-ice-500/60"
+            >
+              ▶ Voir le pitch
+            </a>
+          </section>
+        )}
+
         {/* Badges */}
         {caller.badges.length > 0 && (
           <section className="mt-4 rounded-xl border border-night-600 bg-night-800 p-6">

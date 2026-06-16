@@ -1,12 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/cron/auto-validate",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/retry-payouts",
-      "schedule": "30 * * * *"
+      "path": "/api/cron/daily",
+      "schedule": "0 3 * * *"
     },
     {
       "path": "/api/cron/close-season",

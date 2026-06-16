@@ -25,6 +25,8 @@ export interface CallerProfile {
   lifetimePoints: number;
   lifetimeMeetingsValidated: number;
   badges: Badge[];
+  // URL externe de la vidéo de pitch (preuve sociale optionnelle), null si non renseignée
+  pitchVideoUrl: string | null;
 }
 
 export interface Badge {

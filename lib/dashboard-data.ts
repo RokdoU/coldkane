@@ -20,6 +20,8 @@ export interface CallerMeeting {
   scheduledAt: string;
   status: MeetingStatus;
   payoutCents: number | null;
+  disputeReason: string | null;
+  callerEvidence: string | null;
 }
 
 export interface CallerDashboard {
@@ -29,6 +31,8 @@ export interface CallerDashboard {
   totalEarnedCents: number;
   pendingMeetings: number;
   hasStripeAccount: boolean;
+  // URL externe de la vidéo de pitch (preuve sociale optionnelle), null si non renseignée
+  pitchVideoUrl: string | null;
 }
 
 export async function getCallerDashboard(userId: string | null): Promise<CallerDashboard> {
@@ -61,6 +65,8 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
           scheduledAt: new Date(Date.now() + 2 * 86_400_000).toISOString(),
           status: "booked",
           payoutCents: null,
+          disputeReason: null,
+          callerEvidence: null,
         },
         {
           id: "demo-m2",
@@ -69,11 +75,24 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
           scheduledAt: new Date(Date.now() - 3 * 86_400_000).toISOString(),
           status: "validated",
           payoutCents: 12750,
+          disputeReason: null,
+          callerEvidence: null,
+        },
+        {
+          id: "demo-m3",
+          missionTitle: "RDV démo pour CRM SaaS",
+          prospectCompany: "Foncia Lyon",
+          scheduledAt: new Date(Date.now() - 1 * 86_400_000).toISOString(),
+          status: "disputed",
+          payoutCents: null,
+          disputeReason: "Le prospect dit n'avoir jamais confirmé ce créneau.",
+          callerEvidence: null,
         },
       ],
       totalEarnedCents: 38250,
       pendingMeetings: 1,
       hasStripeAccount: false,
+      pitchVideoUrl: "https://www.tiktok.com/@sashaclose/video/7300000000000000000",
     };
   }
 
@@ -86,11 +105,17 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
       .order("created_at", { ascending: false }),
     supabase
       .from("meetings")
-      .select("id, prospect_company, scheduled_at, status, payout_cents, missions!inner(title)")
+      .select(
+        "id, prospect_company, scheduled_at, status, payout_cents, dispute_reason, caller_evidence, missions!inner(title)",
+      )
       .eq("caller_id", userId)
       .order("scheduled_at", { ascending: false })
       .limit(30),
-    supabase.from("callers").select("stripe_account_id").eq("profile_id", userId).single(),
+    supabase
+      .from("callers")
+      .select("stripe_account_id, pitch_video_url")
+      .eq("profile_id", userId)
+      .single(),
   ]);
 
   const mappedMeetings: CallerMeeting[] = (meetings ?? []).map(
@@ -101,6 +126,8 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
       scheduledAt: m.scheduled_at as string,
       status: m.status as MeetingStatus,
       payoutCents: (m.payout_cents as number) ?? null,
+      disputeReason: (m.dispute_reason as string) ?? null,
+      callerEvidence: (m.caller_evidence as string) ?? null,
     }),
   );
 
@@ -128,6 +155,7 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
       .reduce((sum, m) => sum + (m.payoutCents ?? 0), 0),
     pendingMeetings: mappedMeetings.filter((m) => m.status === "booked").length,
     hasStripeAccount: Boolean(caller?.stripe_account_id),
+    pitchVideoUrl: (caller?.pitch_video_url as string) ?? null,
   };
 }
 

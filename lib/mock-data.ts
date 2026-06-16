@@ -14,15 +14,16 @@ export const mockSeason: Season = {
 };
 
 const callers: Array<
-  Omit<CallerProfile, "badges"> & {
+  Omit<CallerProfile, "badges" | "pitchVideoUrl"> & {
     points: number;
     meetings: number;
     noShows: number;
     bestStreak: number;
     badgeSlugs: string[];
+    pitchVideoUrl?: string | null;
   }
 > = [
-  { id: "c1", username: "sashaclose", fullName: "Sasha M.", avatarUrl: null, headline: "SaaS B2B • 7 ans d'outbound", bio: "Ex-SDR manager. Je booke, je ne raconte pas.", lifetimePoints: 3120, lifetimeMeetingsValidated: 27, points: 3120, meetings: 27, noShows: 1, bestStreak: 9, badgeSlugs: ["first-blood", "streak-5", "top-week"] },
+  { id: "c1", username: "sashaclose", fullName: "Sasha M.", avatarUrl: null, headline: "SaaS B2B • 7 ans d'outbound", bio: "Ex-SDR manager. Je booke, je ne raconte pas.", lifetimePoints: 3120, lifetimeMeetingsValidated: 27, points: 3120, meetings: 27, noShows: 1, bestStreak: 9, badgeSlugs: ["first-blood", "streak-5", "top-week"], pitchVideoUrl: "https://www.tiktok.com/@sashaclose/video/7300000000000000000" },
   { id: "c2", username: "karim_dial", fullName: "Karim B.", avatarUrl: null, headline: "Fintech & assurance", bio: null, lifetimePoints: 2870, lifetimeMeetingsValidated: 25, points: 2870, meetings: 25, noShows: 0, bestStreak: 11, badgeSlugs: ["streak-10", "zero-noshow"] },
   { id: "c3", username: "lea.outbound", fullName: "Léa R.", avatarUrl: null, headline: "Recrutement & RH tech", bio: null, lifetimePoints: 2640, lifetimeMeetingsValidated: 24, points: 2640, meetings: 24, noShows: 2, bestStreak: 7, badgeSlugs: ["first-blood"] },
   { id: "c4", username: "tomdialer", fullName: "Tom V.", avatarUrl: null, headline: "Agences & SMMA", bio: null, lifetimePoints: 2210, lifetimeMeetingsValidated: 20, points: 2210, meetings: 20, noShows: 1, bestStreak: 6, badgeSlugs: [] },
@@ -57,6 +58,7 @@ export const mockLadder: LadderEntry[] = callers
       lifetimePoints: c.lifetimePoints,
       lifetimeMeetingsValidated: c.lifetimeMeetingsValidated,
       badges: c.badgeSlugs.map((s) => badgeCatalog[s as keyof typeof badgeCatalog]),
+      pitchVideoUrl: c.pitchVideoUrl ?? null,
     },
     points: c.points,
     meetingsValidated: c.meetings,
