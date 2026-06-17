@@ -133,6 +133,42 @@ export function MissionForm() {
         />
       </div>
 
+      <div>
+        <label htmlFor="qualificationCriteria" className="block text-sm font-semibold">
+          Critères de RDV qualifié{" "}
+          <span className="font-normal text-slate-400">(base de validation — soyez précis)</span>
+        </label>
+        <textarea
+          id="qualificationCriteria"
+          name="qualificationCriteria"
+          rows={3}
+          placeholder="Ex : décideur présent (pas un assistant), besoin réel exprimé, budget et horizon d'achat < 6 mois. Un RDV hors critères ne sera pas validé."
+          className={inputCls}
+        />
+        <p className="mt-1.5 text-xs text-slate-500">
+          C&apos;est ce qui fait foi pour valider ou contester un RDV. Plus c&apos;est clair,
+          moins il y a de litiges.
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="bookingUrl" className="block text-sm font-semibold">
+          Lien de réservation{" "}
+          <span className="font-normal text-slate-400">(votre agenda — optionnel)</span>
+        </label>
+        <input
+          id="bookingUrl"
+          name="bookingUrl"
+          type="url"
+          placeholder="https://calendly.com/votre-equipe/decouverte"
+          className={inputCls}
+        />
+        <p className="mt-1.5 text-xs text-slate-500">
+          Le RDV se book directement dans votre calendrier — vous savez tout de suite
+          qu&apos;il a eu lieu. Affiché au caller une fois sa candidature acceptée.
+        </p>
+      </div>
+
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
           <label htmlFor="pricePerMeeting" className="block text-sm font-semibold">

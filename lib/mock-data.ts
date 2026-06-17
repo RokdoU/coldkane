@@ -89,6 +89,9 @@ export const mockMissions: Mission[] = [
     meetingType: "Démo produit de 30 min sur Google Meet avec un account executive Nexa — lien Calendly fourni après acceptation de ta candidature.",
     pitchNotes:
       "Accroche qui marche : \"Vous gérez vos clients sur quoi en ce moment ?\" — si la réponse mentionne Excel, un tableau partagé ou un outil qu'ils n'aiment pas, tu tiens le fil. Objection fréquente : \"On a déjà Salesforce.\" Réponse : \"On s'intègre dessus, mais pour les PME qui n'ont pas d'admin Salesforce à plein temps, on divise le coût par 4.\" Ne promets pas de tarif — dirige vers la démo.",
+    qualificationCriteria:
+      "RDV qualifié = décideur présent (pas un assistant), besoin réel exprimé et horizon d achat < 6 mois. Hors critères = non validé.",
+    bookingUrl: "https://calendly.com/coldkane-demo/rdv-qualifie",
   },
   {
     id: "m2",
@@ -111,6 +114,9 @@ export const mockMissions: Mission[] = [
     meetingType: "Appel découverte de 20 min avec le directeur commercial Hexalift — qualification budget + planning travaux.",
     pitchNotes:
       "Angle sécurité en premier : \"La CNAM renforce les contrôles manutention en 2026 — vous êtes à jour sur vos équipements ?\". Si oui, angle productivité : \"On a un benchmark secteur qui montre un gain moyen de 12 min par rotation de palette.\". Évite de parler installation : ils veulent savoir si ça vaut la peine d'aller plus loin, pas signer maintenant.",
+    qualificationCriteria:
+      "RDV qualifié = décideur présent (pas un assistant), besoin réel exprimé et horizon d achat < 6 mois. Hors critères = non validé.",
+    bookingUrl: "https://calendly.com/coldkane-demo/rdv-qualifie",
   },
   {
     id: "m3",
@@ -133,6 +139,9 @@ export const mockMissions: Mission[] = [
     meetingType: "Démo live de 30 min sur Zoom — l'expert-comptable branche une vraie liasse, on lui montre le résultat en temps réel.",
     pitchNotes:
       "Opener : \"Combien d'heures par semaine vos collaborateurs passent à saisir des justificatifs ?\" — si > 5h, tu as un lead. Objection principale : \"On a déjà un scanner.\" Réponse : \"On ne remplace pas le scan, on élimine ce qui vient après.\" Autre objection : \"Nos clients n'enverront jamais leurs documents numériquement.\" Réponse : \"80 % des cabinets qui le disent ont 60 % de leurs clients qui le font déjà via leur banque.\"",
+    qualificationCriteria:
+      "RDV qualifié = décideur présent (pas un assistant), besoin réel exprimé et horizon d achat < 6 mois. Hors critères = non validé.",
+    bookingUrl: "https://calendly.com/coldkane-demo/rdv-qualifie",
   },
   {
     id: "m4",
@@ -155,6 +164,9 @@ export const mockMissions: Mission[] = [
     meetingType: "Appel stratégique de 30 min avec le fondateur de Studio Karma — audit gratuit des campagnes actuelles pendant l'appel.",
     pitchNotes:
       "Opener qui qualifie direct : \"Vous êtes à combien de CA mensuel en ce moment, et quelle part vient des ads ?\". Si la réponse est > 50k et < 30 % en ads, c'est un lead chaud (gros potentiel non exploité). Cas clients à mentionner : marque beauté passée de 30k à 120k/mois en 4 mois. Ne promets pas de résultats chiffrés — dis \"ils ont fait un audit gratuit et décidé de suite\".",
+    qualificationCriteria:
+      "RDV qualifié = décideur présent (pas un assistant), besoin réel exprimé et horizon d achat < 6 mois. Hors critères = non validé.",
+    bookingUrl: "https://calendly.com/coldkane-demo/rdv-qualifie",
   },
 ];
 

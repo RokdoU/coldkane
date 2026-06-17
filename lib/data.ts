@@ -96,6 +96,8 @@ function rowToMission(row: Record<string, unknown>): Mission {
     targetPersona: (row.target_persona as string) ?? null,
     meetingType: (row.meeting_type as string) ?? null,
     pitchNotes: (row.pitch_notes as string) ?? null,
+    qualificationCriteria: (row.qualification_criteria as string) ?? null,
+    bookingUrl: (row.booking_url as string) ?? null,
   };
 }
 

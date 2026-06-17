@@ -2,7 +2,7 @@
 
 import { isSupabaseConfigured } from "./supabase";
 import { supabaseServer } from "./supabase-server";
-import type { MeetingStatus } from "./types";
+import type { MeetingStatus, Lead, LeadStatus } from "./types";
 
 export interface CallerAssignment {
   id: string;
@@ -11,6 +11,8 @@ export interface CallerAssignment {
   companyName: string;
   pricePerMeetingCents: number;
   status: "applied" | "active" | "ended" | "rejected";
+  bookingUrl: string | null;
+  qualificationCriteria: string | null;
 }
 
 export interface CallerMeeting {
@@ -33,6 +35,8 @@ export interface CallerDashboard {
   hasStripeAccount: boolean;
   // URL externe de la vidéo de pitch (preuve sociale optionnelle), null si non renseignée
   pitchVideoUrl: string | null;
+  // Pool de leads des missions actives : disponibles (à réserver) + réservés par moi
+  leads: Lead[];
 }
 
 export async function getCallerDashboard(userId: string | null): Promise<CallerDashboard> {
@@ -47,6 +51,9 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
           companyName: "Nexa CRM",
           pricePerMeetingCents: 15000,
           status: "active",
+          bookingUrl: "https://calendly.com/coldkane-demo/rdv-qualifie",
+          qualificationCriteria:
+            "Décideur présent (DAF/DG), besoin réel exprimé, horizon d'achat < 6 mois.",
         },
         {
           id: "demo-a2",
@@ -55,6 +62,8 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
           companyName: "Hexalift",
           pricePerMeetingCents: 25000,
           status: "applied",
+          bookingUrl: null,
+          qualificationCriteria: null,
         },
       ],
       meetings: [
@@ -93,6 +102,26 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
       pendingMeetings: 1,
       hasStripeAccount: false,
       pitchVideoUrl: "https://www.tiktok.com/@sashaclose/video/7300000000000000000",
+      leads: [
+        {
+          id: "demo-l1",
+          missionId: "m1",
+          missionTitle: "RDV démo pour CRM SaaS — cible DAF de PME",
+          accountName: "Groupe Méridien (négoce BTP)",
+          contactHint: "DAF · région lyonnaise",
+          notes: "Utilise encore Excel d'après leur offre d'emploi récente.",
+          status: "available",
+        },
+        {
+          id: "demo-l2",
+          missionId: "m1",
+          missionTitle: "RDV démo pour CRM SaaS — cible DAF de PME",
+          accountName: "Atelier Nord SAS",
+          contactHint: "DG",
+          notes: null,
+          status: "claimed",
+        },
+      ],
     };
   }
 
@@ -100,7 +129,9 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
   const [{ data: assignments }, { data: meetings }, { data: caller }] = await Promise.all([
     supabase
       .from("assignments")
-      .select("id, status, missions!inner(id, title, price_per_meeting_cents, companies!inner(name))")
+      .select(
+        "id, status, missions!inner(id, title, price_per_meeting_cents, booking_url, qualification_criteria, companies!inner(name))",
+      )
       .eq("caller_id", userId)
       .order("created_at", { ascending: false }),
     supabase
@@ -131,13 +162,14 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
     }),
   );
 
-  return {
-    demo: false,
-    assignments: (assignments ?? []).map((a: Record<string, unknown>) => {
+  const mappedAssignments: CallerAssignment[] = (assignments ?? []).map(
+    (a: Record<string, unknown>) => {
       const mission = a.missions as {
         id: string;
         title: string;
         price_per_meeting_cents: number;
+        booking_url: string | null;
+        qualification_criteria: string | null;
         companies: { name: string };
       };
       return {
@@ -147,8 +179,39 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
         companyName: mission.companies.name,
         pricePerMeetingCents: mission.price_per_meeting_cents,
         status: a.status as CallerAssignment["status"],
+        bookingUrl: mission.booking_url ?? null,
+        qualificationCriteria: mission.qualification_criteria ?? null,
       };
-    }),
+    },
+  );
+
+  // Pool de leads des missions actives : disponibles + ceux que j'ai réservés
+  const activeMissionIds = mappedAssignments
+    .filter((a) => a.status === "active")
+    .map((a) => a.missionId);
+  const titleByMission = new Map(mappedAssignments.map((a) => [a.missionId, a.missionTitle]));
+  let leads: Lead[] = [];
+  if (activeMissionIds.length > 0) {
+    const { data: leadRows } = await supabase
+      .from("leads")
+      .select("id, mission_id, account_name, contact_hint, notes, status, claimed_by")
+      .in("mission_id", activeMissionIds)
+      .or(`status.eq.available,claimed_by.eq.${userId}`)
+      .order("created_at", { ascending: true });
+    leads = (leadRows ?? []).map((l: Record<string, unknown>) => ({
+      id: l.id as string,
+      missionId: l.mission_id as string,
+      missionTitle: titleByMission.get(l.mission_id as string) ?? "",
+      accountName: l.account_name as string,
+      contactHint: (l.contact_hint as string) ?? null,
+      notes: (l.notes as string) ?? null,
+      status: l.status as LeadStatus,
+    }));
+  }
+
+  return {
+    demo: false,
+    assignments: mappedAssignments,
     meetings: mappedMeetings,
     totalEarnedCents: mappedMeetings
       .filter((m) => m.status === "validated")
@@ -156,6 +219,7 @@ export async function getCallerDashboard(userId: string | null): Promise<CallerD
     pendingMeetings: mappedMeetings.filter((m) => m.status === "booked").length,
     hasStripeAccount: Boolean(caller?.stripe_account_id),
     pitchVideoUrl: (caller?.pitch_video_url as string) ?? null,
+    leads,
   };
 }
 
@@ -167,6 +231,8 @@ export interface CompanyMission {
   meetingsTarget: number;
   meetingsValidated: number;
   budgetCents: number;
+  leadsTotal: number;
+  leadsAvailable: number;
 }
 
 export interface CompanyApplication {
@@ -207,6 +273,8 @@ export async function getCompanyDashboard(userId: string | null): Promise<Compan
           meetingsTarget: 20,
           meetingsValidated: 13,
           budgetCents: 300000,
+          leadsTotal: 24,
+          leadsAvailable: 9,
         },
       ],
       applications: [
@@ -237,7 +305,9 @@ export async function getCompanyDashboard(userId: string | null): Promise<Compan
     await Promise.all([
       supabase
         .from("missions")
-        .select("id, title, status, price_per_meeting_cents, meetings_target, budget_cents, meetings(status)")
+        .select(
+          "id, title, status, price_per_meeting_cents, meetings_target, budget_cents, meetings(status), leads(status)",
+        )
         .eq("company_id", userId)
         .order("created_at", { ascending: false }),
       supabase
@@ -274,6 +344,10 @@ export async function getCompanyDashboard(userId: string | null): Promise<Compan
         (x) => x.status === "validated",
       ).length,
       budgetCents: m.budget_cents as number,
+      leadsTotal: ((m.leads as { status: string }[]) ?? []).length,
+      leadsAvailable: ((m.leads as { status: string }[]) ?? []).filter(
+        (x) => x.status === "available",
+      ).length,
     })),
     applications: (applications ?? []).map((a: Record<string, unknown>) => {
       const caller = a.callers as {

@@ -1,3 +1,15 @@
+export type LeadStatus = "available" | "claimed" | "contacted" | "closed";
+
+export interface Lead {
+  id: string;
+  missionId: string;
+  missionTitle: string;
+  accountName: string;
+  contactHint: string | null;
+  notes: string | null;
+  status: LeadStatus;
+}
+
 export type Tier =
   | "bronze"
   | "argent"
@@ -71,6 +83,8 @@ export interface Mission {
   targetPersona: string | null;
   meetingType: string | null;
   pitchNotes: string | null;
+  qualificationCriteria: string | null;
+  bookingUrl: string | null;
 }
 
 export type MeetingStatus =

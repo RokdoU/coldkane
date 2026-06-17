@@ -9,6 +9,7 @@ import { formatEuros } from "@/lib/ranking";
 import { acceptApplication, rejectApplication, companyValidateMeeting } from "@/lib/actions/missions";
 import { DisputeForm } from "./dispute-form";
 import { CloseMissionForm } from "./close-mission-form";
+import { AddLeadsForm } from "./add-leads-form";
 import { Lock, TrendingUp, Calendar, Users } from "@/components/icons";
 
 export const metadata: Metadata = {
@@ -308,6 +309,30 @@ export default async function CompanyDashboardPage({
           </div>
         )}
       </section>
+
+      {/* Pool de leads (sourcing hybride) : comptes cibles que les callers réservent */}
+      {data.missions.some((m) => ["funded", "active"].includes(m.status)) && (
+        <section className="mt-10">
+          <h2 className="text-lg font-semibold">Pool de leads</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Optionnel : fournissez des comptes cibles. Vos callers en réservent un avant
+            de l&apos;appeler — pas de doublon, vous gardez la main sur qui est approché.
+          </p>
+          <div className="mt-4 space-y-3">
+            {data.missions
+              .filter((m) => ["funded", "active"].includes(m.status))
+              .map((m) => (
+                <AddLeadsForm
+                  key={m.id}
+                  missionId={m.id}
+                  missionTitle={m.title}
+                  leadsTotal={m.leadsTotal}
+                  leadsAvailable={m.leadsAvailable}
+                />
+              ))}
+          </div>
+        </section>
+      )}
     </main>
   );
 }

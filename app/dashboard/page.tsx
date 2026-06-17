@@ -17,6 +17,7 @@ import { WinShareCard } from "@/components/win-share-card";
 import { DisputeEvidenceForm } from "./dispute-evidence-form";
 import { PitchVideoForm } from "@/components/pitch-video-form";
 import { DegenStatCard } from "@/components/degen-stat-card";
+import { LeadsBoard } from "@/components/leads-board";
 
 export const metadata: Metadata = {
   title: "Mon dashboard",
@@ -129,6 +130,17 @@ export default async function CallerDashboardPage() {
                       <p className="mt-0.5 text-xs text-foreground/40">
                         {a.companyName} · {formatEuros(a.pricePerMeetingCents)}/RDV
                       </p>
+                      {a.status === "active" && a.bookingUrl && (
+                        <a
+                          href={a.bookingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-ice-400 transition-colors duration-200 hover:text-ice-300"
+                        >
+                          <Calendar className="h-3 w-3" />
+                          Agenda de l&apos;entreprise
+                        </a>
+                      )}
                     </div>
                     <span
                       className={`micro shrink-0 rounded-full border px-2.5 py-1 ${
@@ -153,6 +165,9 @@ export default async function CallerDashboardPage() {
             )}
           </section>
         </div>
+
+        {/* Pool de leads des missions actives (sourcing hybride) */}
+        <LeadsBoard leads={data.leads} />
 
         {/* Historique RDV */}
         <section className="mt-6 rounded-xl border border-night-600 bg-night-800 p-6">

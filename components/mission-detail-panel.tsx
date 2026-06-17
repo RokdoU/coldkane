@@ -188,6 +188,21 @@ export function MissionDetailPanel({
                 </p>
               </section>
 
+              {mission.qualificationCriteria && (
+                <section className="rounded-lg border border-night-600 bg-night-800 p-4">
+                  <h3 className="micro flex items-center gap-1.5 text-foreground/40">
+                    <ShieldCheck className="h-3 w-3" />
+                    Ce qui compte comme RDV qualifié
+                  </h3>
+                  <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-foreground/75">
+                    {mission.qualificationCriteria}
+                  </p>
+                  <p className="mt-2 text-xs text-foreground/35">
+                    C&apos;est la base de validation : un RDV hors critères peut être contesté.
+                  </p>
+                </section>
+              )}
+
               {mission.pitchNotes && (
                 <section className="rounded-lg border border-ice-500/20 bg-ice-500/5 p-4">
                   <h3 className="micro flex items-center gap-1.5 text-ice-400">
@@ -247,6 +262,18 @@ export function MissionDetailPanel({
                   <ShieldCheck className="h-4 w-4" />
                   Candidature envoyée
                 </div>
+              )}
+
+              {profile?.role === "caller" && applied && mission.bookingUrl && (
+                <a
+                  href={mission.bookingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 rounded-md border border-night-500 px-4 py-3 text-sm font-medium text-foreground/70 transition-colors duration-200 hover:border-night-400 hover:text-foreground"
+                >
+                  <Calendar className="h-3.5 w-3.5" />
+                  Agenda de l&apos;entreprise
+                </a>
               )}
 
               {applyError && (

@@ -53,6 +53,9 @@ export async function createMission(
   const targetPersona = String(formData.get("targetPersona") ?? "").trim() || null;
   const meetingType = String(formData.get("meetingType") ?? "").trim() || null;
   const pitchNotes = String(formData.get("pitchNotes") ?? "").trim() || null;
+  const qualificationCriteria =
+    String(formData.get("qualificationCriteria") ?? "").trim() || null;
+  const bookingUrl = String(formData.get("bookingUrl") ?? "").trim() || null;
   const pricePerMeeting = Number(formData.get("pricePerMeeting"));
   const meetingsTarget = Number(formData.get("meetingsTarget"));
   const isBounty = formData.get("isBounty") === "on";
@@ -81,6 +84,8 @@ export async function createMission(
       target_persona: targetPersona,
       meeting_type: meetingType,
       pitch_notes: pitchNotes,
+      qualification_criteria: qualificationCriteria,
+      booking_url: bookingUrl,
       status: "draft",
       price_per_meeting_cents: priceCents,
       meetings_target: meetingsTarget,
@@ -303,6 +308,7 @@ export async function declareMeeting(
     .trim()
     .toLowerCase();
   const scheduledAt = String(formData.get("scheduledAt") ?? "");
+  const leadId = String(formData.get("leadId") ?? "").trim() || null;
 
   if (!assignmentId || !prospectCompany || !prospectEmail || !scheduledAt) {
     return { error: "Tous les champs sont obligatoires." };
@@ -331,6 +337,14 @@ export async function declareMeeting(
       return { error: "Ce prospect a déjà un RDV comptabilisé sur cette mission." };
     }
     return { error: error.message };
+  }
+
+  // Rattache le RDV au lead réservé (le passe en 'contacted') si fourni
+  if (meeting && leadId) {
+    await supabase.rpc("link_meeting_lead", {
+      p_meeting_id: (meeting as { id: string }).id,
+      p_lead_id: leadId,
+    });
   }
 
   // Notification entreprise (valider/contester sous 72h) — jamais bloquant
