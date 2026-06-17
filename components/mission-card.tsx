@@ -17,13 +17,21 @@ export function MissionCard({
 
   const card = (
     <article
-      className={`group h-full rounded-xl border bg-night-800 p-5 transition-colors duration-200 ${
+      className={`group relative h-full overflow-hidden rounded-xl border bg-night-800 p-5 transition-all duration-200 hover:-translate-y-1 ${
         mission.isBounty
-          ? "border-ember-500/35 hover:border-ember-500/60"
+          ? "border-ember-500/35 hover:border-ember-500/60 hover:shadow-lg hover:shadow-ember-500/5"
           : "border-night-600 hover:border-night-500"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
+      {/* Bounty : traitement degen (halo + balayage) */}
+      {mission.isBounty && (
+        <>
+          <div className="pointer-events-none absolute -right-6 -top-8 h-24 w-24 rounded-full bg-ember-500/15 blur-3xl animate-halo-drift" aria-hidden />
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-sweep" aria-hidden />
+        </>
+      )}
+
+      <div className="relative flex items-start justify-between gap-3">
         <div>
           <p className="micro text-foreground/35">
             {mission.companyName} · {mission.sector}
@@ -40,14 +48,22 @@ export function MissionCard({
         )}
       </div>
 
-      <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-foreground/50">
+      <p className="relative mt-3 line-clamp-2 text-sm leading-relaxed text-foreground/50">
         {mission.description}
       </p>
 
-      <div className="mt-5 flex items-end justify-between">
+      <div className="relative mt-5 flex items-end justify-between">
         <div>
           <p className="display tnum text-xl">
-            {formatEuros(mission.pricePerMeetingCents)}
+            <span
+              className={
+                mission.isBounty
+                  ? "bg-gradient-to-r from-ember-400 via-foreground to-ember-500 bg-clip-text text-transparent"
+                  : ""
+              }
+            >
+              {formatEuros(mission.pricePerMeetingCents)}
+            </span>
             <span className="ml-1.5 text-sm font-normal tracking-normal text-foreground/40">
               / RDV validé
             </span>
@@ -63,7 +79,7 @@ export function MissionCard({
         )}
       </div>
 
-      <div className="mt-4">
+      <div className="relative mt-4">
         <div className="flex justify-between text-xs text-foreground/40">
           <span className="tnum">
             {mission.meetingsValidated}/{mission.meetingsTarget} RDV

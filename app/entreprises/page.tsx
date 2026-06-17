@@ -47,18 +47,24 @@ export default function EntreprisesPage() {
 
       {/* Fonctionnement */}
       <section id="fonctionnement" className="mx-auto max-w-6xl px-4 pb-16">
-        <h2 className="text-2xl font-bold">Fonctionnement</h2>
-        <ol className="mt-8 grid gap-6 md:grid-cols-4">
+        <h2 className="text-2xl font-bold tracking-tight">Comment ça marche</h2>
+        <p className="mt-2 text-slate-600">De la mission au RDV validé, en quatre étapes.</p>
+        <ol className="mt-8 grid gap-5 md:grid-cols-4">
           {[
             ["Décrivez votre cible", "Secteur, persona, prix par RDV, objectif. 10 minutes."],
             ["Séquestrez le budget", "Paiement sécurisé Stripe. Les fonds restent bloqués jusqu'aux résultats."],
             ["Les callers prospectent", "Les meilleurs profils prennent votre mission et bookent dans votre calendrier."],
             ["Payez au RDV validé", `Chaque RDV honoré libère le paiement (commission de ${Math.round(COMMISSION_RATE * 100)}% incluse). Le reste vous revient.`],
           ].map(([title, text], i) => (
-            <li key={title} className="rounded-xl border border-slate-200 p-5">
-              <p className="text-sm font-bold text-slate-400">Étape {i + 1}</p>
-              <h3 className="mt-1 font-semibold">{title}</h3>
-              <p className="mt-2 text-sm text-slate-600">{text}</p>
+            <li
+              key={title}
+              className="group relative rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
+            >
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-slate-900 to-slate-700 text-sm font-bold tabular-nums text-white shadow-sm">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 className="mt-4 font-semibold text-slate-900">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">{text}</p>
             </li>
           ))}
         </ol>

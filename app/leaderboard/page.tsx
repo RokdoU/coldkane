@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nav, Footer } from "@/components/nav";
 import { LadderTable } from "@/components/ladder-table";
+import { LadderPodium } from "@/components/ladder-podium";
 import { LiveLadderRefresh } from "@/components/live-ladder-refresh";
 import { KillFeed } from "@/components/kill-feed";
 import { getActiveSeason, getLadder, getRecentValidations } from "@/lib/data";
@@ -49,8 +50,16 @@ export default async function LeaderboardPage() {
           <KillFeed events={validations} />
         </div>
 
+        {/* Podium : la zone de flex du top 3 */}
+        {ladder.length >= 3 && (
+          <div className="mt-6">
+            <LadderPodium entries={ladder} />
+          </div>
+        )}
+
+        {/* Le reste du ladder */}
         <div className="mt-4">
-          <LadderTable entries={ladder} />
+          <LadderTable entries={ladder.length >= 3 ? ladder.slice(3) : ladder} />
         </div>
 
         <section className="mt-10 rounded-xl border border-night-600 bg-night-800 p-6">

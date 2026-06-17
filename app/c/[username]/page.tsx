@@ -8,6 +8,7 @@ import { TierBadge } from "@/components/tier-badge";
 import { ShareKit } from "@/components/share-kit";
 import { getCallerByUsername } from "@/lib/data";
 import { nextTierProgress, TIER_LABELS } from "@/lib/ranking";
+import { DegenStatCard } from "@/components/degen-stat-card";
 import { Ban, Calendar, Flame, Medal, ShieldCheck, TrendingUp } from "@/components/icons";
 
 interface Props {
@@ -51,6 +52,7 @@ export default async function CallerProfilePage({ params }: Props) {
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-14">
         {/* En-tête profil */}
         <section className="relative overflow-hidden rounded-xl border border-night-600 bg-night-800 p-8">
+          <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-ice-400/10 blur-3xl animate-halo-drift" aria-hidden />
           <p className="display tnum pointer-events-none absolute -right-2 -top-9 select-none text-[8.5rem] leading-none text-night-700">
             {String(entry.rank).padStart(2, "0")}
           </p>
@@ -94,20 +96,12 @@ export default async function CallerProfilePage({ params }: Props) {
           )}
         </section>
 
-        {/* Stats de saison */}
-        <section className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-night-600 bg-night-600 sm:grid-cols-4">
-          {[
-            { icon: TrendingUp, value: entry.points.toLocaleString("fr-FR"), label: "Points saison" },
-            { icon: Calendar, value: String(entry.meetingsValidated), label: "RDV validés" },
-            { icon: Flame, value: String(entry.bestStreak), label: "Meilleur streak", hot: entry.bestStreak >= 5 },
-            { icon: Ban, value: String(entry.noShows), label: "No-shows" },
-          ].map(({ icon: Icon, value, label, hot }) => (
-            <div key={label} className="bg-night-800 p-5 text-center">
-              <Icon className={`mx-auto h-4 w-4 ${hot ? "text-ember-400" : "text-foreground/35"}`} />
-              <p className="display tnum mt-2.5 text-2xl">{value}</p>
-              <p className="micro mt-1.5 text-foreground/35">{label}</p>
-            </div>
-          ))}
+        {/* Stats de saison — flex degen */}
+        <section className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <DegenStatCard icon={TrendingUp} accent="ice" label="Points saison" value={entry.points.toLocaleString("fr-FR")} />
+          <DegenStatCard icon={Calendar} accent="legende" label="RDV validés" value={String(entry.meetingsValidated)} />
+          <DegenStatCard icon={Flame} accent="ember" label="Meilleur streak" value={String(entry.bestStreak)} />
+          <DegenStatCard icon={Ban} accent="muted" label="No-shows" value={String(entry.noShows)} />
         </section>
 
         {/* Partage */}

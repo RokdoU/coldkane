@@ -5,9 +5,14 @@
 
 import type { ComponentType } from "react";
 
-type Accent = "ice" | "ember" | "legende";
+type Accent = "ice" | "ember" | "legende" | "muted";
 
 const ACCENT: Record<Accent, { text: string; glow: string; ring: string }> = {
+  muted: {
+    text: "from-foreground/60 via-foreground/40 to-foreground/60",
+    glow: "bg-white/5",
+    ring: "group-hover:border-night-500",
+  },
   ice: {
     text: "from-ice-300 via-foreground to-ice-400",
     glow: "bg-ice-400/20",

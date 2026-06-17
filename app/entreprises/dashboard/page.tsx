@@ -9,6 +9,7 @@ import { formatEuros } from "@/lib/ranking";
 import { acceptApplication, rejectApplication, companyValidateMeeting } from "@/lib/actions/missions";
 import { DisputeForm } from "./dispute-form";
 import { CloseMissionForm } from "./close-mission-form";
+import { Lock, TrendingUp, Calendar, Users } from "@/components/icons";
 
 export const metadata: Metadata = {
   title: "Dashboard entreprise",
@@ -67,6 +68,46 @@ export default async function CompanyDashboardPage({
           Nouvelle mission
         </Link>
       </div>
+
+      {/* KPIs — vue d'ensemble */}
+      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[
+          { icon: Lock, label: "Budget consommé", value: formatEuros(data.spentCents) },
+          {
+            icon: TrendingUp,
+            label: "Missions en cours",
+            value: String(
+              data.missions.filter((m) => m.status === "funded" || m.status === "active").length,
+            ),
+          },
+          {
+            icon: Calendar,
+            label: "RDV à examiner",
+            value: String(data.meetingsToReview.length),
+            urgent: data.meetingsToReview.length > 0,
+          },
+          { icon: Users, label: "Candidatures", value: String(data.applications.length) },
+        ].map(({ icon: Icon, label, value, urgent }) => (
+          <div
+            key={label}
+            className="group rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+          >
+            <span
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${
+                urgent
+                  ? "bg-amber-50 text-amber-600"
+                  : "bg-gradient-to-br from-slate-100 to-slate-50 text-slate-500"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+            </span>
+            <p className="mt-3 text-2xl font-bold tabular-nums tracking-tight text-slate-900">
+              {value}
+            </p>
+            <p className="mt-0.5 text-xs font-medium text-slate-500">{label}</p>
+          </div>
+        ))}
+      </section>
 
       {/* RDV à examiner — l'action la plus urgente en premier */}
       <section className="mt-10">
