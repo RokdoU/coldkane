@@ -63,7 +63,9 @@ export default async function Home() {
             <h1 className="display mx-auto mt-8 max-w-3xl text-center text-5xl leading-[1.08] tracking-tight sm:text-6xl">
               Pas de CV. Pas de diplôme.
               <br />
-              <span className="text-ice-400">Que des résultats.</span>
+              <span className="bg-gradient-to-r from-ice-300 via-ice-400 to-ice-300 bg-clip-text text-transparent animate-gradient-pan">
+                Que des résultats.
+              </span>
             </h1>
             <p className="mx-auto mt-7 max-w-xl text-center text-lg leading-relaxed text-foreground/55">
               Des entreprises paient pour des RDV, budget séquestré. Tu bookes,

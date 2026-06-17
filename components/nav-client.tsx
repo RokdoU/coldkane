@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Phone } from "./icons";
 import type { SessionProfile } from "@/lib/supabase-server";
 
@@ -19,6 +20,8 @@ export function NavClient({
   signOutAction: () => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const dashboardHref =
     profile?.role === "company" ? "/entreprises/dashboard" : "/dashboard";
 
@@ -44,7 +47,12 @@ export function NavClient({
             <Link
               key={l.href}
               href={l.href}
-              className="cursor-pointer rounded-md px-3 py-2 text-foreground/60 transition-colors duration-200 hover:text-foreground"
+              aria-current={isActive(l.href) ? "page" : undefined}
+              className={`cursor-pointer rounded-md px-3 py-2 transition-colors duration-200 ${
+                isActive(l.href)
+                  ? "bg-night-700 text-foreground"
+                  : "text-foreground/60 hover:text-foreground"
+              }`}
             >
               {l.label}
             </Link>
@@ -126,7 +134,10 @@ export function NavClient({
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="cursor-pointer rounded-md px-3 py-3 text-foreground/70 transition-colors duration-200 hover:bg-night-700 hover:text-foreground"
+                aria-current={isActive(l.href) ? "page" : undefined}
+                className={`cursor-pointer rounded-md px-3 py-3 transition-colors duration-200 hover:bg-night-700 ${
+                  isActive(l.href) ? "bg-night-700 text-foreground" : "text-foreground/70 hover:text-foreground"
+                }`}
               >
                 {l.label}
               </Link>

@@ -29,7 +29,7 @@ const MEETING_TYPES = [
 ];
 
 const inputCls =
-  "mt-2 w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none transition-colors duration-200 focus:border-slate-900";
+  "mt-2 w-full rounded-lg border border-slate-300 px-4 py-2.5 outline-none transition-all duration-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10";
 
 export function MissionForm() {
   const [pricePerMeeting, setPricePerMeeting] = useState(120);
@@ -167,24 +167,38 @@ export function MissionForm() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-6">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">
-          Récapitulatif
-        </h2>
-        <dl className="mt-3 space-y-2 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-slate-600">Budget à séquestrer</dt>
-            <dd className="font-bold tabular-nums">{formatEuros(budget)}</dd>
+      <div className="relative overflow-hidden rounded-2xl bg-slate-900 p-6 text-white">
+        <div
+          className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-to-br from-indigo-500/30 to-sky-500/20 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Budget à séquestrer
+            </p>
+            <p className="mt-1 text-4xl font-bold tabular-nums tracking-tight">
+              {formatEuros(budget)}
+            </p>
           </div>
+          <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
+            Solde non consommé remboursé
+          </span>
+        </div>
+        <dl className="relative mt-5 space-y-2 border-t border-white/10 pt-4 text-sm">
           <div className="flex justify-between">
-            <dt className="text-slate-600">
+            <dt className="text-slate-400">
               Dont commission plateforme ({Math.round(COMMISSION_RATE * 100)}%)
             </dt>
-            <dd className="tabular-nums">{formatEuros(Math.round(budget * COMMISSION_RATE))}</dd>
+            <dd className="tabular-nums text-slate-200">
+              {formatEuros(Math.round(budget * COMMISSION_RATE))}
+            </dd>
           </div>
-          <div className="flex justify-between border-t border-slate-200 pt-2">
-            <dt className="text-slate-600">Remboursé si objectif non atteint</dt>
-            <dd className="font-semibold text-emerald-600">au prorata, automatique</dd>
+          <div className="flex justify-between">
+            <dt className="text-slate-400">Reversé aux callers (RDV validés)</dt>
+            <dd className="tabular-nums text-slate-200">
+              {formatEuros(budget - Math.round(budget * COMMISSION_RATE))}
+            </dd>
           </div>
         </dl>
       </div>

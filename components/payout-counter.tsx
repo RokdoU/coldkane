@@ -3,7 +3,7 @@
 
 import { unstable_cache } from "next/cache";
 import { isSupabaseConfigured, supabasePublic } from "@/lib/supabase";
-import { formatEuros } from "@/lib/ranking";
+import { CountUp } from "./count-up";
 
 export interface PlatformStats {
   totalPaidCents: number;
@@ -35,16 +35,19 @@ export async function getPlatformStats(): Promise<PlatformStats> {
   return fetchPlatformStats();
 }
 
-// Le chiffre, gros et sec. Pas d'animation, pas d'astérisque : un total réel.
+// Le chiffre, gros : un total réel. Count-up au montage (micro-interaction).
 export function PayoutCounter({ stats }: { stats: PlatformStats }) {
   return (
     <div className="text-center">
-      <p className="display tnum text-4xl tracking-tight text-ice-300 sm:text-5xl">
-        {formatEuros(stats.totalPaidCents)}
-      </p>
+      <CountUp
+        value={stats.totalPaidCents}
+        mode="euros"
+        className="display tnum block text-4xl tracking-tight text-ice-300 sm:text-5xl"
+      />
       <p className="micro mt-2.5 text-foreground/40">
-        versés aux callers — {stats.payoutsCount.toLocaleString("fr-FR")} RDV payés à la
-        validation
+        versés aux callers —{" "}
+        <CountUp value={stats.payoutsCount} mode="count" className="tnum" /> RDV payés à
+        la validation
       </p>
     </div>
   );
