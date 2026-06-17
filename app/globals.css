@@ -15,6 +15,52 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ===== Motion "degen" (callers) + "innovant" (entreprise), CSS only ===== */
+
+/* Halo lumineux qui dérive dans une carte */
+@keyframes halo-drift {
+  0%   { transform: translate(-10%, -10%); }
+  25%  { transform: translate(120%, 0%); }
+  50%  { transform: translate(110%, 120%); }
+  75%  { transform: translate(-20%, 110%); }
+  100% { transform: translate(-10%, -10%); }
+}
+
+/* Balayage diagonal façon "shine" */
+@keyframes sweep {
+  0%   { transform: translateX(-120%) skewX(-12deg); opacity: 0; }
+  20%  { opacity: 1; }
+  60%  { transform: translateX(220%) skewX(-12deg); opacity: 0; }
+  100% { transform: translateX(220%) skewX(-12deg); opacity: 0; }
+}
+
+/* Pulsation de glow (chiffres degen) */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+
+/* Dégradé animé (bordure/texte premium entreprise) */
+@keyframes gradient-pan {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Flottement doux d'une carte bento */
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+.animate-halo-drift { animation: halo-drift 14s linear infinite; }
+.animate-sweep      { animation: sweep 5.5s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 3.5s ease-in-out infinite; }
+.animate-float-soft { animation: float-soft 7s ease-in-out infinite; }
+.animate-gradient-pan {
+  background-size: 200% auto;
+  animation: gradient-pan 6s linear infinite alternate;
+}
+
 :root {
   --background: #0a0a0b;
   --foreground: #ededef;

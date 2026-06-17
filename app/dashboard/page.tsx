@@ -16,6 +16,7 @@ import { ReferralCard } from "@/components/referral-card";
 import { WinShareCard } from "@/components/win-share-card";
 import { DisputeEvidenceForm } from "./dispute-evidence-form";
 import { PitchVideoForm } from "@/components/pitch-video-form";
+import { DegenStatCard } from "@/components/degen-stat-card";
 
 export const metadata: Metadata = {
   title: "Mon dashboard",
@@ -65,19 +66,29 @@ export default async function CallerDashboardPage() {
           </div>
         )}
 
-        {/* KPIs */}
-        <section className="mt-6 grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-night-600 bg-night-600">
-          {[
-            { icon: TrendingUp, value: formatEuros(data.totalEarnedCents), label: "Gains validés" },
-            { icon: Calendar, value: String(data.pendingMeetings), label: "RDV en attente" },
-            { icon: Check, value: String(activeAssignments.length), label: "Missions actives" },
-          ].map(({ icon: Icon, value, label }) => (
-            <div key={label} className="bg-night-800 p-5 text-center">
-              <Icon className="mx-auto h-4 w-4 text-foreground/35" />
-              <p className="display tnum mt-2.5 text-xl">{value}</p>
-              <p className="micro mt-1.5 text-foreground/35">{label}</p>
-            </div>
-          ))}
+        {/* KPIs — flex degen : ton cash, ton activité, en gros */}
+        <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <DegenStatCard
+            icon={TrendingUp}
+            accent="ice"
+            label="Cash encaissé"
+            value={formatEuros(data.totalEarnedCents)}
+            hint="payé à la validation, vérifié par escrow"
+          />
+          <DegenStatCard
+            icon={Calendar}
+            accent="ember"
+            label="RDV en jeu"
+            value={String(data.pendingMeetings)}
+            hint="en attente de validation"
+          />
+          <DegenStatCard
+            icon={Check}
+            accent="legende"
+            label="Missions actives"
+            value={String(activeAssignments.length)}
+            hint="terrain de chasse ouvert"
+          />
         </section>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-2">

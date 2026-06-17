@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { COMMISSION_RATE } from "@/lib/config";
 import { RoiCalculator } from "@/components/roi-calculator";
+import { EnterpriseHero } from "@/components/enterprise-hero";
 
 export const metadata: Metadata = {
   title: "Entreprises — RDV qualifiés, payés au résultat",
@@ -12,36 +13,7 @@ export const metadata: Metadata = {
 export default function EntreprisesPage() {
   return (
     <main>
-      {/* Hero sobre */}
-      <section className="mx-auto max-w-6xl px-4 pb-16 pt-20">
-        <div className="max-w-2xl">
-          <h1 className="text-4xl font-bold leading-tight tracking-tight">
-            Des RDV commerciaux qualifiés.
-            <br />
-            <span className="text-slate-500">Vous ne payez que le résultat.</span>
-          </h1>
-          <p className="mt-6 text-lg leading-relaxed text-slate-600">
-            Déposez votre mission, votre budget est placé sous séquestre. Nos
-            commerciaux — classés et vérifiés sur leurs résultats réels — prospectent
-            pour vous. Un paiement n&apos;est déclenché que lorsqu&apos;un RDV
-            qualifié a effectivement eu lieu, preuve calendrier à l&apos;appui.
-          </p>
-          <div className="mt-8 flex gap-3">
-            <Link
-              href="/entreprises/poster"
-              className="rounded-md cursor-pointer bg-slate-900 px-6 py-3 font-semibold text-white transition-colors duration-200 hover:bg-slate-700"
-            >
-              Déposer une mission
-            </Link>
-            <Link
-              href="/leaderboard"
-              className="rounded-md cursor-pointer border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition-colors duration-200 hover:border-slate-400"
-            >
-              Voir le classement des callers
-            </Link>
-          </div>
-        </div>
-      </section>
+      <EnterpriseHero />
 
       {/* Garanties */}
       <section className="border-y border-slate-200 bg-slate-50">
