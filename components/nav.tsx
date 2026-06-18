@@ -14,6 +14,9 @@ export function Footer() {
       <p className="display text-foreground/55">{BRAND.name}</p>
       <p className="mt-1">{BRAND.tagline}</p>
       <p className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-foreground/30">
+        <a href="/faq" className="cursor-pointer transition-colors duration-200 hover:text-foreground/60">
+          FAQ
+        </a>
         <a href="/cgu" className="cursor-pointer transition-colors duration-200 hover:text-foreground/60">
           CGU
         </a>

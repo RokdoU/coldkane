@@ -9,6 +9,8 @@ import { ShareKit } from "@/components/share-kit";
 import { getCallerByUsername } from "@/lib/data";
 import { nextTierProgress, TIER_LABELS } from "@/lib/ranking";
 import { DegenStatCard } from "@/components/degen-stat-card";
+import { JsonLd } from "@/components/json-ld";
+import { profileLd, breadcrumbLd } from "@/lib/structured-data";
 import { Ban, Calendar, Flame, Medal, ShieldCheck, TrendingUp } from "@/components/icons";
 
 interface Props {
@@ -50,6 +52,15 @@ export default async function CallerProfilePage({ params }: Props) {
   return (
     <>
       <Nav />
+      <JsonLd
+        data={[
+          profileLd(entry),
+          breadcrumbLd([
+            { name: "Classement", path: "/leaderboard" },
+            { name: caller.username, path: `/c/${caller.username}` },
+          ]),
+        ]}
+      />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-14">
         {/* En-tête profil */}
         <section className="relative overflow-hidden rounded-xl border border-night-600 bg-night-800 p-8">

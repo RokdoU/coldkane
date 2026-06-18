@@ -13,6 +13,9 @@ import {
   getRecentValidations,
 } from "@/lib/data";
 import { formatEuros } from "@/lib/ranking";
+import { JsonLd } from "@/components/json-ld";
+import { serviceLd, faqLd } from "@/lib/structured-data";
+import { FAQ_HOME } from "@/lib/faq";
 import { Crosshair, Lock, Phone, ShieldCheck, TrendingUp, Zap } from "@/components/icons";
 
 // La home garde le titre par défaut du layout (« ColdKane — tagline »). On
@@ -41,6 +44,7 @@ export default async function Home() {
   return (
     <>
       <Nav />
+      <JsonLd data={[serviceLd(), faqLd(FAQ_HOME)]} />
 
       {/* Bandeau bounty : un event, pas une bannière pub */}
       {liveBounty && liveBounty.bountyDeadline && (

@@ -9,6 +9,8 @@ import { getSessionProfile, supabaseServer } from "@/lib/supabase-server";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { applyToMission } from "@/lib/actions/missions";
 import { formatEuros, TIER_LABELS } from "@/lib/ranking";
+import { JsonLd } from "@/components/json-ld";
+import { missionOfferLd, breadcrumbLd } from "@/lib/structured-data";
 import { ArrowRight, Calendar, Crosshair, Lock, Phone, ShieldCheck, Zap } from "@/components/icons";
 
 export async function generateMetadata({
@@ -61,6 +63,15 @@ export default async function MissionDetailPage({
   return (
     <>
       <Nav />
+      <JsonLd
+        data={[
+          missionOfferLd(mission),
+          breadcrumbLd([
+            { name: "Missions", path: "/missions" },
+            { name: mission.title, path: `/missions/${id}` },
+          ]),
+        ]}
+      />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 lg:py-14">
 
         {/* Breadcrumb */}

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Inter, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import { BRAND } from "@/lib/config";
+import { JsonLd } from "@/components/json-ld";
+import { organizationLd, websiteLd } from "@/lib/structured-data";
 
 const grotesk = Space_Grotesk({
   variable: "--font-grotesk",
@@ -81,7 +83,11 @@ export default function RootLayout({
       lang="fr"
       className={`${grotesk.variable} ${inter.variable} ${plex.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {/* GEO : entité + site, lisibles par les moteurs IA sur chaque page */}
+        <JsonLd data={[organizationLd(), websiteLd()]} />
+        {children}
+      </body>
     </html>
   );
 }

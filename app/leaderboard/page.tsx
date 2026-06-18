@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Nav, Footer } from "@/components/nav";
 import { LadderTable } from "@/components/ladder-table";
 import { LadderPodium } from "@/components/ladder-podium";
+import { JsonLd } from "@/components/json-ld";
+import { leaderboardLd } from "@/lib/structured-data";
 import { LiveLadderRefresh } from "@/components/live-ladder-refresh";
 import { KillFeed } from "@/components/kill-feed";
 import { getActiveSeason, getLadder, getRecentValidations } from "@/lib/data";
@@ -29,6 +31,7 @@ export default async function LeaderboardPage() {
   return (
     <>
       <Nav />
+      <JsonLd data={leaderboardLd(ladder)} />
       <LiveLadderRefresh />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-14">
         <div className="flex flex-wrap items-end justify-between gap-4">

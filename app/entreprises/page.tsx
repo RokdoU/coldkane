@@ -3,6 +3,9 @@ import Link from "next/link";
 import { COMMISSION_RATE } from "@/lib/config";
 import { RoiCalculator } from "@/components/roi-calculator";
 import { EnterpriseHero } from "@/components/enterprise-hero";
+import { JsonLd } from "@/components/json-ld";
+import { serviceLd, faqLd } from "@/lib/structured-data";
+import { FAQ } from "@/lib/faq";
 
 export const metadata: Metadata = {
   title: "Entreprises",
@@ -14,6 +17,7 @@ export const metadata: Metadata = {
 export default function EntreprisesPage() {
   return (
     <main>
+      <JsonLd data={[serviceLd(), faqLd(FAQ.filter((f) => /entreprise|coûte|RDV qualifié|paiement/i.test(f.q)))]} />
       <EnterpriseHero />
 
       {/* Garanties */}
