@@ -6,6 +6,9 @@ import { SignupForm } from "./signup-form";
 
 export const metadata: Metadata = {
   title: "Inscription",
+  description:
+    "Crée ton compte ColdKane : prends des missions de cold calling, encaisse à la validation et grimpe le classement public. Pas de CV, que des résultats.",
+  alternates: { canonical: "/inscription" },
 };
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;

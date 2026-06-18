@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Conditions générales d'utilisation" };
+export const metadata: Metadata = {
+  title: "Conditions générales d'utilisation",
+  description:
+    "Les conditions générales d'utilisation de ColdKane : droits et obligations des cold callers et des entreprises sur la plateforme.",
+  alternates: { canonical: "/cgu" },
+};
 
 // Trame solide à faire relire par un avocat avant le lancement commercial.
 export default function CguPage() {

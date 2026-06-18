@@ -20,12 +20,55 @@ const plex = IBM_Plex_Sans({
   subsets: ["latin"],
 });
 
+// URL canonique du site : sert de base à toutes les URLs absolues des
+// métadonnées (OG, sitemap, canonical). Surchargeable par variable d'env.
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://coldkane.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: `${BRAND.name} — ${BRAND.tagline}`,
     template: `%s · ${BRAND.name}`,
   },
   description: BRAND.description,
+  applicationName: BRAND.name,
+  // Indexation publique autorisée par défaut (les espaces privés se
+  // désactivent page par page via robots: { index: false }).
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  // OG / Twitter par défaut : repris par toutes les pages sans carte dédiée.
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: BRAND.name,
+    title: `${BRAND.name} — ${BRAND.tagline}`,
+    description: BRAND.description,
+    url: SITE_URL,
+    images: [
+      {
+        url: "/api/og/default",
+        width: 1200,
+        height: 630,
+        alt: `${BRAND.name} — ${BRAND.tagline}`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${BRAND.name} — ${BRAND.tagline}`,
+    description: BRAND.description,
+    images: ["/api/og/default"],
+  },
 };
 
 export default function RootLayout({

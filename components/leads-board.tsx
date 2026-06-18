@@ -50,7 +50,8 @@ function LeadCard({ lead }: { lead: Lead }) {
           <button
             onClick={() => act(claimLead)}
             disabled={pending}
-            className="cursor-pointer rounded-md bg-foreground px-3 py-1.5 text-xs font-semibold text-background transition-opacity duration-200 hover:opacity-85 disabled:opacity-50"
+            aria-label={`Réserver le compte ${lead.accountName}`}
+            className="cursor-pointer rounded-md bg-foreground px-3 py-1.5 text-xs font-semibold text-background transition-opacity duration-200 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ice-400 disabled:opacity-50"
           >
             {pending ? "…" : "Réserver"}
           </button>
@@ -59,7 +60,8 @@ function LeadCard({ lead }: { lead: Lead }) {
           <button
             onClick={() => act(releaseLead)}
             disabled={pending}
-            className="cursor-pointer text-xs text-foreground/40 underline-offset-2 transition-colors duration-200 hover:text-foreground/70 hover:underline disabled:opacity-50"
+            aria-label={`Relâcher le compte ${lead.accountName}`}
+            className="cursor-pointer rounded text-xs text-foreground/40 underline-offset-2 transition-colors duration-200 hover:text-foreground/70 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ice-400 disabled:opacity-50"
           >
             {pending ? "…" : "Relâcher"}
           </button>

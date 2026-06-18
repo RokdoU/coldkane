@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Politique de confidentialité" };
+export const metadata: Metadata = {
+  title: "Politique de confidentialité",
+  description:
+    "Comment ColdKane collecte, utilise et protège vos données personnelles, conformément au RGPD.",
+  alternates: { canonical: "/confidentialite" },
+};
 
 // Trame solide à faire relire par un avocat / DPO avant le lancement commercial.
 export default function ConfidentialitePage() {

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Nav, Footer } from "@/components/nav";
 
-export const metadata: Metadata = { title: "Charte de contenu" };
+export const metadata: Metadata = {
+  title: "Charte de contenu",
+  description:
+    "Les règles de contenu et de bonne conduite sur ColdKane : ce qui est attendu des cold callers et des entreprises pour garder un classement sain et fiable.",
+  alternates: { canonical: "/charte-contenu" },
+};
 
 // L'UGC vit sur TikTok/IG — ColdKane n'héberge aucune vidéo. Trois règles,
 // pas vingt : protéger le prospect, libérer le caller. Même gabarit visuel

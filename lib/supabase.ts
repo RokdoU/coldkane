@@ -7,12 +7,16 @@ export function isSupabaseConfigured(): boolean {
   );
 }
 
-// Client public (lecture ladder/profils — RLS s'applique)
+// Client public (lecture ladder/profils — RLS s'applique). Singleton : sans
+// session ni état par-requête, on réutilise la même instance anon.
+let _publicClient: SupabaseClient | null = null;
 export function supabasePublic(): SupabaseClient {
-  return createClient(
+  if (_publicClient) return _publicClient;
+  _publicClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
+  return _publicClient;
 }
 
 // Client service role (validation RDV, webhooks) — serveur uniquement

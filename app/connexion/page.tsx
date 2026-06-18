@@ -5,6 +5,9 @@ import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
   title: "Connexion",
+  description: "Connecte-toi à ton espace ColdKane.",
+  // Page utilitaire d'authentification : hors index.
+  robots: { index: false, follow: true },
 };
 
 export default function ConnexionPage() {

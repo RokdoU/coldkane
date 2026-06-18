@@ -97,8 +97,9 @@ export function NavClient({
           type="button"
           aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           aria-expanded={open}
+          aria-controls="mobile-menu"
           onClick={() => setOpen((v) => !v)}
-          className="cursor-pointer rounded-md p-2 text-foreground/70 transition-colors duration-200 hover:text-foreground md:hidden"
+          className="cursor-pointer rounded-md p-2 text-foreground/70 transition-colors duration-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ice-400 md:hidden"
         >
           <svg
             viewBox="0 0 24 24"
@@ -127,7 +128,7 @@ export function NavClient({
 
       {/* Menu mobile */}
       {open && (
-        <div className="border-t border-night-600 bg-background px-4 py-3 md:hidden">
+        <div id="mobile-menu" className="border-t border-night-600 bg-background px-4 py-3 md:hidden">
           <div className="flex flex-col gap-1 text-sm font-medium">
             {LINKS.map((l) => (
               <Link

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { Mission } from "@/lib/types";
 import type { SessionProfile } from "@/lib/supabase-server";
@@ -33,20 +33,56 @@ export function MissionDetailPanel({
   const [applied, setApplied] = useState(initialHasApplied);
   const [applyError, setApplyError] = useState<string | null>(null);
 
+  // a11y : refs pour le focus trap et la restitution du focus au déclencheur
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
   const progress = Math.min(mission.meetingsValidated / mission.meetingsTarget, 1);
   const remaining = Math.max(
     mission.budgetCents - mission.meetingsValidated * mission.pricePerMeetingCents,
     0,
   );
 
-  // Fermer avec Échap
+  // Fermer avec Échap + focus trap (Tab/Shift+Tab bouclent dans le panel)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusables = panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey) {
+        if (active === first || !panel.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  // a11y : focus le bouton fermer à l'ouverture, restitue au déclencheur à la fermeture
+  useEffect(() => {
+    triggerRef.current = document.activeElement as HTMLElement | null;
+    closeButtonRef.current?.focus();
+    return () => {
+      triggerRef.current?.focus?.();
+    };
+  }, []);
 
   // Bloquer le scroll de la page
   useEffect(() => {
@@ -78,6 +114,10 @@ export function MissionDetailPanel({
 
       {/* Panel */}
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mission-detail-title"
         className="relative z-10 w-full sm:max-w-3xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border border-night-500 bg-[#0e0e10] shadow-2xl"
         style={{ animation: "modal-in 0.18s ease-out forwards" }}
         onClick={(e) => e.stopPropagation()}
@@ -90,11 +130,12 @@ export function MissionDetailPanel({
         <div className="p-6 sm:p-8">
           {/* Bouton fermer */}
           <button
+            ref={closeButtonRef}
             onClick={onClose}
-            className="absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-night-500 text-xl leading-none text-foreground/40 transition-colors duration-200 hover:border-night-400 hover:text-foreground"
+            className="absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-night-500 text-xl leading-none text-foreground/40 transition-colors duration-200 hover:border-night-400 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ice-400"
             aria-label="Fermer"
           >
-            ×
+            <span aria-hidden>×</span>
           </button>
 
           {/* Badges */}
@@ -112,7 +153,10 @@ export function MissionDetailPanel({
           </div>
 
           {/* Titre */}
-          <h2 className="display mt-4 text-xl leading-snug tracking-tight sm:text-2xl">
+          <h2
+            id="mission-detail-title"
+            className="display mt-4 text-xl leading-snug tracking-tight sm:text-2xl"
+          >
             {mission.title}
           </h2>
           <p className="mt-1.5 text-sm text-foreground/40">{mission.companyName}</p>

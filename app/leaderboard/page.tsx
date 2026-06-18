@@ -10,7 +10,9 @@ import { Star, Timer } from "@/components/icons";
 
 export const metadata: Metadata = {
   title: "Classement",
-  description: "Le ladder en temps réel des meilleurs cold callers.",
+  description:
+    "Le ladder en temps réel des meilleurs cold callers : rangs, tiers et RDV validés, des stats vérifiées par escrow et impossibles à truquer.",
+  alternates: { canonical: "/leaderboard" },
 };
 
 export default async function LeaderboardPage() {

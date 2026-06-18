@@ -102,7 +102,7 @@ export function MissionCard({
     return (
       <button
         onClick={() => onSelect(mission)}
-        className="block w-full cursor-pointer text-left"
+        className="block w-full cursor-pointer rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ice-400"
         aria-label={`Voir la mission : ${mission.title}`}
       >
         {card}
@@ -111,7 +111,11 @@ export function MissionCard({
   }
 
   return (
-    <Link href={`/missions/${mission.id}`} className="block">
+    <Link
+      href={`/missions/${mission.id}`}
+      aria-label={`Voir la mission : ${mission.title}`}
+      className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ice-400"
+    >
       {card}
     </Link>
   );

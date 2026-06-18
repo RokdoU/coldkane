@@ -1,6 +1,7 @@
 // Couche d'accès données : Supabase si configuré, sinon données de démo.
 // Toutes les pages passent par ici — brancher la prod = poser les env vars.
 
+import { cache } from "react";
 import { isSupabaseConfigured, supabasePublic } from "./supabase";
 import {
   mockCallerByUsername,
@@ -11,7 +12,11 @@ import {
 import type { LadderEntry, Mission, Season } from "./types";
 import { tierForPoints } from "./ranking";
 
-export async function getActiveSeason(): Promise<Season> {
+// cache() : déduplique les requêtes identiques au sein d'un même rendu serveur.
+// getActiveSeason est appelée par getLadder, getRivalInfo et les pages ;
+// getLadder par getCallerByUsername, getRivalInfo et les pages. Sans dedup,
+// une page d'accueil déclenchait la même requête saison 3-4×.
+export const getActiveSeason = cache(async (): Promise<Season> => {
   if (!isSupabaseConfigured()) return mockSeason;
   const { data } = await supabasePublic()
     .from("seasons")
@@ -27,9 +32,9 @@ export async function getActiveSeason(): Promise<Season> {
     endsAt: data.ends_at,
     isActive: data.is_active,
   };
-}
+});
 
-export async function getLadder(): Promise<LadderEntry[]> {
+export const getLadder = cache(async (): Promise<LadderEntry[]> => {
   if (!isSupabaseConfigured()) return mockLadder;
   const season = await getActiveSeason();
   const { data } = await supabasePublic()
@@ -67,7 +72,7 @@ export async function getLadder(): Promise<LadderEntry[]> {
       tier: tierForPoints(row.points as number, i + 1),
     };
   });
-}
+});
 
 export async function getCallerByUsername(username: string): Promise<LadderEntry | null> {
   if (!isSupabaseConfigured()) return mockCallerByUsername(username);

@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Mentions légales" };
+export const metadata: Metadata = {
+  title: "Mentions légales",
+  description:
+    "Informations légales sur l'éditeur du site ColdKane, l'hébergement et les responsabilités.",
+  alternates: { canonical: "/mentions-legales" },
+};
 
 // À compléter avec la société une fois immatriculée.
 export default function MentionsLegalesPage() {

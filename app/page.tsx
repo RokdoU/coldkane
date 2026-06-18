@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Nav, Footer } from "@/components/nav";
 import { LadderTable } from "@/components/ladder-table";
@@ -13,6 +14,14 @@ import {
 } from "@/lib/data";
 import { formatEuros } from "@/lib/ranking";
 import { Crosshair, Lock, Phone, ShieldCheck, TrendingUp, Zap } from "@/components/icons";
+
+// La home garde le titre par défaut du layout (« ColdKane — tagline »). On
+// précise une description orientée conversion et l'URL canonique du site.
+export const metadata: Metadata = {
+  description:
+    "La marketplace gamifiée des cold callers : booke des RDV qualifiés, encaisse à la validation et grimpe un classement public vérifié par escrow.",
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const [season, ladder, missions, validations, stats] = await Promise.all([

@@ -44,7 +44,9 @@ function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-3 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-indigo-600 outline-none"
+        aria-label={label}
+        aria-valuetext={display}
+        className="mt-3 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-indigo-600 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
       />
     </div>
   );

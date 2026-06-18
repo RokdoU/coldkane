@@ -6,6 +6,10 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Déposer une mission",
+  description:
+    "Publiez votre mission de cold calling, séquestrez le budget en escrow et recevez des RDV qualifiés payés uniquement au résultat.",
+  // Espace transactionnel réservé aux entreprises connectées : hors index.
+  robots: { index: false, follow: true },
 };
 
 export default async function PosterMissionPage() {

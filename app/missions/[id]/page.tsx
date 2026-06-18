@@ -19,9 +19,17 @@ export async function generateMetadata({
   const { id } = await params;
   const mission = await getMissionById(id);
   if (!mission) return { title: "Mission introuvable" };
+  // Le titre passe par le template du layout (« … · ColdKane »), pas besoin
+  // de suffixer ici.
+  const description = mission.description.slice(0, 160);
   return {
-    title: `${mission.title} — ColdKane`,
-    description: mission.description.slice(0, 160),
+    title: mission.title,
+    description,
+    alternates: { canonical: `/missions/${id}` },
+    openGraph: {
+      title: mission.title,
+      description,
+    },
   };
 }
 

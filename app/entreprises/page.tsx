@@ -5,9 +5,10 @@ import { RoiCalculator } from "@/components/roi-calculator";
 import { EnterpriseHero } from "@/components/enterprise-hero";
 
 export const metadata: Metadata = {
-  title: "Entreprises — RDV qualifiés, payés au résultat",
+  title: "Entreprises",
   description:
-    "Déposez une mission, le budget est séquestré, vous ne payez que les RDV qualifiés qui ont réellement eu lieu.",
+    "Déposez une mission, le budget est séquestré : vous ne payez que les RDV qualifiés réellement obtenus. Zéro risque, des commerciaux prouvés au résultat.",
+  alternates: { canonical: "/entreprises" },
 };
 
 export default function EntreprisesPage() {

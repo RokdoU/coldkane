@@ -21,6 +21,8 @@ import { LeadsBoard } from "@/components/leads-board";
 
 export const metadata: Metadata = {
   title: "Mon dashboard",
+  // Espace personnel connecté : hors index.
+  robots: { index: false, follow: false },
 };
 
 export default async function CallerDashboardPage() {

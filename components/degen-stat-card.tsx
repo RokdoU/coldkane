@@ -76,7 +76,7 @@ export function DegenStatCard({
 
       {hint && (
         <p className="relative mt-2 text-xs text-foreground/45">
-          <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${a.glow} animate-pulse-glow`} />
+          <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${a.glow} animate-pulse-glow`} aria-hidden />
           {hint}
         </p>
       )}

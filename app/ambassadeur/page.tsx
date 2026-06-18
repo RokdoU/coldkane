@@ -18,6 +18,8 @@ import { Sparkle, TrendingUp, Users } from "@/components/icons";
 
 export const metadata: Metadata = {
   title: "Espace ambassadeur",
+  // Espace personnel connecté : hors index.
+  robots: { index: false, follow: false },
 };
 
 export default async function AmbassadorPage() {

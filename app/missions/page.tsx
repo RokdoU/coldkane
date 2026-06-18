@@ -9,7 +9,9 @@ import { Lock } from "@/components/icons";
 
 export const metadata: Metadata = {
   title: "Missions & bounties",
-  description: "Missions payées à la performance, budget séquestré en escrow.",
+  description:
+    "Prends une mission de cold calling payée à la performance : budget séquestré en escrow, tu encaisses dès qu'un RDV qualifié est validé.",
+  alternates: { canonical: "/missions" },
 };
 
 export default async function MissionsPage() {

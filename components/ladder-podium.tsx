@@ -46,8 +46,13 @@ function PodiumCard({ entry, slot }: { entry: LadderEntry; slot: number }) {
         </div>
 
         {/* Avatar */}
-        <Link href={`/c/${entry.caller.username}`} className="group/av relative mx-auto mt-4 block w-fit">
+        <Link
+          href={`/c/${entry.caller.username}`}
+          aria-label={`Profil de ${entry.caller.username}`}
+          className="group/av relative mx-auto mt-4 block w-fit rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ice-400"
+        >
           <span
+            aria-hidden
             className={`flex items-center justify-center rounded-full bg-night-700 font-semibold text-foreground/80 ring-2 ${s.ring} ${
               first ? "h-16 w-16 text-2xl" : "h-12 w-12 text-lg"
             }`}
@@ -57,7 +62,11 @@ function PodiumCard({ entry, slot }: { entry: LadderEntry; slot: number }) {
         </Link>
 
         {/* Pseudo + tier */}
-        <Link href={`/c/${entry.caller.username}`} className="relative mt-3 block">
+        <Link
+          href={`/c/${entry.caller.username}`}
+          aria-label={`Profil de ${entry.caller.username}`}
+          className="relative mt-3 block rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ice-400"
+        >
           <span className="block font-semibold transition-colors duration-200 group-hover:text-foreground">
             {entry.caller.username}
           </span>

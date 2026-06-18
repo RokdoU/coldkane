@@ -6,8 +6,18 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: "/",
-      disallow: ["/dashboard", "/entreprises/dashboard", "/api/"],
+      // Indexation publique ouverte, sauf les espaces privés / utilitaires.
+      // /api/og/ reste autorisé pour que les crawlers puissent charger les
+      // images OG (cartes de partage).
+      allow: ["/", "/api/og/"],
+      disallow: [
+        "/dashboard",
+        "/ambassadeur",
+        "/entreprises/dashboard",
+        "/entreprises/poster",
+        "/connexion",
+        "/api/",
+      ],
     },
     sitemap: `${BASE}/sitemap.xml`,
   };
