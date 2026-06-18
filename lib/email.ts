@@ -99,6 +99,24 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
 }
 
 // =====================================================
+// Alerte ops interne (monitoring lancement public). Envoyée à OPS_ALERT_EMAIL
+// (ou FRAUD_ALERT_EMAIL en repli). No-op si non configuré. Jamais bloquant.
+// =====================================================
+export async function notifyOps(subject: string, lines: string[]): Promise<void> {
+  const to = process.env.OPS_ALERT_EMAIL || process.env.FRAUD_ALERT_EMAIL;
+  if (!to || !isEmailConfigured()) return;
+  try {
+    const html = layout(
+      heading(subject) +
+        lines.map((l) => `<p style="margin:0 0 6px;font-size:14px;">${l}</p>`).join(""),
+    );
+    await sendEmail(to, `[ColdKane ops] ${subject}`, html);
+  } catch (err) {
+    console.error("notifyOps:", err);
+  }
+}
+
+// =====================================================
 // (a) RDV déclaré → l'entreprise doit valider ou contester
 // =====================================================
 
@@ -228,12 +246,12 @@ export async function sendMeetingValidatedEmails(meeting: {
       const html = layout(
         heading("RDV validé, bien joué !") +
           `<p style="margin:0;">Ton RDV avec <strong>${meeting.prospect_company}</strong> sur la mission <strong>${mission.title}</strong> vient d'être validé.</p>` +
-          detailRows([["Montant net versé", formatEuros(meeting.payout_cents)]]) +
+          detailRows([["Montant net gagné", formatEuros(meeting.payout_cents)]]) +
           pointsLine +
-          `<p style="margin:0;">Le virement part automatiquement via Stripe. Continue comme ça.</p>` +
+          `<p style="margin:0;">Virement automatique via Stripe — l'argent arrive sur ton compte <strong>sous 24&nbsp;h</strong>. Continue comme ça.</p>` +
           button(`${siteUrl()}/dashboard`, "Voir mon dashboard"),
       );
-      await sendEmail(callerTo, `RDV validé — ${formatEuros(meeting.payout_cents)} pour toi`, html);
+      await sendEmail(callerTo, `RDV validé — ${formatEuros(meeting.payout_cents)} gagnés`, html);
     }
 
     // Email entreprise : récap du débit escrow

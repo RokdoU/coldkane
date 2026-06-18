@@ -15,6 +15,7 @@ import {
   recordSignupFingerprint,
   countRecentSignupsFromIp,
 } from "../fraud";
+import { getPlatformFlags } from "../platform";
 
 export interface AuthState {
   error: string | null;
@@ -30,6 +31,16 @@ export async function signUp(
     return {
       error:
         "Mode démo : l'inscription sera activée à la mise en production (Supabase non configuré).",
+    };
+  }
+
+  // Kill switch : freiner l'afflux sans redéployer (cf. platform_flags)
+  const flags = await getPlatformFlags();
+  if (flags.signupsPaused) {
+    return {
+      error:
+        flags.notice ??
+        "Les inscriptions sont momentanément en pause — on ouvre à nouveau très vite. Reviens dans un moment.",
     };
   }
 

@@ -13,6 +13,7 @@
 
 import { headers } from "next/headers";
 import { supabaseAdmin } from "./supabase";
+import { notifyOps } from "./email";
 import { FRAUD } from "./config";
 
 // =====================================================
@@ -181,7 +182,7 @@ export async function countRecentSignupsFromIp(
         },
       };
       await db.from("fraud_flags").insert(flag);
-      notifyFraudAlert(flag);
+      await notifyFraudAlert(flag);
     }
     return total;
   } catch (err) {
@@ -248,7 +249,7 @@ export async function flagCollusionIfSuspicious(params: {
       },
     };
     await db.from("fraud_flags").insert(flag);
-    notifyFraudAlert(flag);
+    await notifyFraudAlert(flag);
   } catch (err) {
     // Jamais bloquant : le RDV est déjà validé/payé, le flag est best-effort.
     console.error("[fraud] flagCollusionIfSuspicious:", err);
@@ -259,20 +260,17 @@ export async function flagCollusionIfSuspicious(params: {
 // Alerte (branchement email plus tard)
 // =====================================================
 
-// Émet une alerte structurée si FRAUD_ALERT_EMAIL est défini. On NE fait PAS
-// d'envoi email ici (lib/email.ts hors périmètre) : un console.error clair,
-// parsable, à brancher plus tard sur un vrai canal (email/Slack).
-export function notifyFraudAlert(flag: {
+// Émet une alerte : log structuré (toujours) + email ops (si configuré).
+// Best-effort, jamais bloquant pour le flux métier.
+export async function notifyFraudAlert(flag: {
   kind: string;
   subject_meeting_id?: string | null;
   subject_profile_id?: string | null;
   details?: unknown;
-}): void {
-  if (!process.env.FRAUD_ALERT_EMAIL) return;
+}): Promise<void> {
   console.error(
     "[fraud][ALERT]",
     JSON.stringify({
-      to: process.env.FRAUD_ALERT_EMAIL,
       kind: flag.kind,
       subject_meeting_id: flag.subject_meeting_id ?? null,
       subject_profile_id: flag.subject_profile_id ?? null,
@@ -280,4 +278,10 @@ export function notifyFraudAlert(flag: {
       at: new Date().toISOString(),
     }),
   );
+  await notifyOps(`Flag fraude : ${flag.kind}`, [
+    flag.subject_profile_id ? `Profil : ${flag.subject_profile_id}` : "",
+    flag.subject_meeting_id ? `RDV : ${flag.subject_meeting_id}` : "",
+    `Détails : ${JSON.stringify(flag.details ?? {})}`,
+    `À revoir dans la table fraud_flags.`,
+  ].filter(Boolean));
 }

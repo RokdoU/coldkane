@@ -18,6 +18,7 @@ import {
   sendMeetingValidatedEmails,
   sendDisputeReminderEmails,
   sendDisputeResolvedEmails,
+  notifyOps,
 } from "./email";
 import { COMMISSION_RATE, DISPUTE, REFERRAL, APPORTEUR } from "./config";
 
@@ -58,7 +59,18 @@ async function payMeetingById(db: SupabaseClient, meetingId: string): Promise<bo
     await db.from("meetings").update({ stripe_transfer_id: transfer.id }).eq("id", meeting.id);
     return true;
   } catch (err) {
-    console.error(`payout différé (meeting ${meetingId}) :`, err);
+    // Solde plateforme indispo (settlement ~J+7) = attendu, retenté au prochain
+    // run. Toute autre erreur = anormale → alerte ops (ne doit pas passer en silence).
+    const code = (err as { code?: string }).code;
+    if (code === "balance_insufficient") {
+      console.error(`payout différé (solde Stripe insuffisant) meeting ${meetingId}`);
+    } else {
+      console.error(`payout échoué (meeting ${meetingId}) :`, err);
+      await notifyOps("Échec transfer Stripe (inattendu)", [
+        `Meeting : ${meetingId}`,
+        `Erreur : ${(err as Error).message}`,
+      ]);
+    }
     return false;
   }
 }
@@ -164,19 +176,39 @@ export async function runAutoResolveDisputes(db: SupabaseClient) {
 }
 
 // Rattrapage : RDV validés encore impayés (compte Connect devenu prêt depuis).
+// Alerte ops si un payout reste orphelin > 48h (≈ 2 runs daily) : en lancement
+// public, un payout qui ne se rattrape pas ne doit jamais passer en silence.
 export async function runRetryPayouts(db: SupabaseClient) {
   const { data: orphans, error } = await db
     .from("meetings")
-    .select("id")
+    .select("id, validated_at")
     .eq("status", "validated")
     .is("stripe_transfer_id", null);
   if (error) throw new Error(error.message);
 
+  const persistent: string[] = [];
   let paid = 0;
   for (const meeting of orphans ?? []) {
-    if (await payMeetingById(db, meeting.id)) paid++;
+    const done = await payMeetingById(db, meeting.id);
+    if (done) {
+      paid++;
+    } else if (
+      meeting.validated_at &&
+      Date.now() - new Date(meeting.validated_at as string).getTime() > 48 * 3_600_000
+    ) {
+      persistent.push(meeting.id as string);
+    }
   }
-  return { retried: orphans?.length ?? 0, paid };
+
+  if (persistent.length > 0) {
+    await notifyOps("Payout(s) orphelin(s) persistant(s) > 48h", [
+      `${persistent.length} RDV validé(s) toujours impayé(s) après 48h.`,
+      `Meetings : ${persistent.join(", ")}`,
+      `Causes probables : compte Connect non terminé, solde plateforme, ou erreur transfer.`,
+    ]);
+  }
+
+  return { retried: orphans?.length ?? 0, paid, persistent: persistent.length };
 }
 
 // Rev-share parrain : pour chaque RDV validé d'un filleul (dans sa fenêtre de

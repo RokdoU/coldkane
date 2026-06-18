@@ -18,6 +18,7 @@ import {
 import { validateMeetingAndPay } from "../meeting-validation";
 import { tierForPoints, TIER_ORDER, TIER_LABELS } from "../ranking";
 import { DISPUTE, EARN_AS_YOU_GO } from "../config";
+import { getPlatformFlags } from "../platform";
 import {
   checkDeclarationRateLimit,
   flagCollusionIfSuspicious,
@@ -45,6 +46,16 @@ export async function createMission(
   const profile = await getSessionProfile();
   if (!profile || profile.role !== "company") {
     redirect("/connexion?next=/entreprises/poster");
+  }
+
+  // Kill switch : pause des nouvelles missions sans redéployer
+  const flags = await getPlatformFlags();
+  if (flags.newMissionsPaused) {
+    return {
+      error:
+        flags.notice ??
+        "Le dépôt de nouvelles missions est momentanément en pause. Réessayez dans quelques instants.",
+    };
   }
 
   const title = String(formData.get("title") ?? "").trim();

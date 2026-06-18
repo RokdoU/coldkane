@@ -72,9 +72,9 @@ export default async function CallerDashboardPage() {
           <DegenStatCard
             icon={TrendingUp}
             accent="ice"
-            label="Cash encaissé"
+            label="Gains validés"
             value={formatEuros(data.totalEarnedCents)}
-            hint="payé à la validation, vérifié par escrow"
+            hint="versé sur ton compte sous 24h"
           />
           <DegenStatCard
             icon={Calendar}
